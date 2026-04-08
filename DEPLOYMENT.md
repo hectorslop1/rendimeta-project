@@ -48,7 +48,7 @@ git remote remove origin
 
 ```bash
 # Agregar el nuevo remote
-git remote add origin https://github.com/hectorslop1/redimeta-project.git
+git remote add origin https://github.com/hectorslop1/rendimeta-project.git
 
 # Verificar
 git remote -v
@@ -106,12 +106,14 @@ git push -u origin develop
 En GitHub, ir a **Settings > Branches > Branch protection rules**:
 
 #### Para `main`:
+
 - ✅ Require pull request reviews before merging
 - ✅ Require status checks to pass before merging
 - ✅ Require branches to be up to date before merging
 - ✅ Include administrators
 
 #### Para `develop`:
+
 - ✅ Require pull request reviews before merging
 - ✅ Require status checks to pass before merging
 
@@ -140,6 +142,7 @@ keytool -genkey -v -keystore ~/rendimeta-release-key.jks \
 #### 3. Configurar Firma
 
 Crear `rendimeta-mobile/android/key.properties`:
+
 ```properties
 storePassword=<password>
 keyPassword=<password>
@@ -218,12 +221,14 @@ vercel
 #### 4. Configurar Variables de Entorno
 
 En Vercel Dashboard:
+
 - Settings > Environment Variables
 - Agregar todas las variables de `.env.local`
 
 #### 5. Configurar Base de Datos
 
 Opciones:
+
 - **Vercel Postgres**: Integración nativa
 - **Supabase**: PostgreSQL gestionado
 - **Railway**: PostgreSQL + hosting
@@ -284,6 +289,7 @@ https://www.netlify.com/
 #### 3. Configurar variables de entorno
 
 En Netlify Dashboard:
+
 - Site settings > Environment variables
 
 ## 🔄 CI/CD
@@ -295,6 +301,7 @@ Los workflows ya están configurados en `.github/workflows/`:
 #### `ci.yml` - Continuous Integration
 
 Se ejecuta en cada push y PR:
+
 - Tests de Flutter
 - Tests de Next.js
 - Lint y análisis de código
@@ -303,6 +310,7 @@ Se ejecuta en cada push y PR:
 #### `deploy-web.yml` - Deploy Web
 
 Se ejecuta en push a `main`:
+
 - Build de producción
 - Deploy a Vercel
 - Migraciones de base de datos
@@ -312,6 +320,7 @@ Se ejecuta en push a `main`:
 En GitHub: **Settings > Secrets and variables > Actions**
 
 Agregar:
+
 ```
 DATABASE_URL=postgresql://...
 VERCEL_TOKEN=...
@@ -346,12 +355,14 @@ flutter pub add firebase_crashlytics
 #### Google Analytics
 
 Para web:
+
 ```bash
 cd rendimeta-web
 npm install @next/third-parties
 ```
 
 Para móvil:
+
 ```bash
 cd rendimeta-mobile
 flutter pub add firebase_analytics
@@ -446,6 +457,6 @@ Para problemas de deployment:
 
 ---
 
-**Repositorio Final**: https://github.com/hectorslop1/redimeta-project.git
+**Repositorio Final**: https://github.com/hectorslop1/rendimeta-project.git
 
 ¡Éxito con el deployment! 🚀

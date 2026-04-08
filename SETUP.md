@@ -7,10 +7,11 @@ Esta guía te ayudará a configurar el entorno de desarrollo para el monorepo de
 ### Para Desarrollo Móvil (Flutter)
 
 1. **Flutter SDK 3.11.0 o superior**
+
    ```bash
    # Verificar instalación
    flutter --version
-   
+
    # Si no está instalado, visita:
    # https://docs.flutter.dev/get-started/install
    ```
@@ -27,25 +28,27 @@ Esta guía te ayudará a configurar el entorno de desarrollo para el monorepo de
 ### Para Desarrollo Web (Next.js)
 
 1. **Node.js 20.x o superior**
+
    ```bash
    # Verificar instalación
    node --version
    npm --version
-   
+
    # Si no está instalado, visita:
    # https://nodejs.org/
    ```
 
 2. **PostgreSQL 14 o superior**
+
    ```bash
    # macOS (con Homebrew)
    brew install postgresql@16
    brew services start postgresql@16
-   
+
    # Linux (Ubuntu/Debian)
    sudo apt install postgresql postgresql-contrib
    sudo systemctl start postgresql
-   
+
    # Windows
    # Descargar desde: https://www.postgresql.org/download/windows/
    ```
@@ -55,8 +58,8 @@ Esta guía te ayudará a configurar el entorno de desarrollo para el monorepo de
 ### 1. Clonar el Repositorio
 
 ```bash
-git clone https://github.com/hectorslop1/redimeta-project.git
-cd redimeta-project
+git clone https://github.com/hectorslop1/rendimeta-project.git
+cd rendimeta-project
 ```
 
 ### 2. Configurar Variables de Entorno
@@ -64,16 +67,19 @@ cd redimeta-project
 #### Para la App Móvil
 
 Copiar el archivo de ejemplo:
+
 ```bash
 cp .env.example .env
 ```
 
 Editar `.env` y configurar:
+
 ```env
 API_URL=http://localhost:3000/api
 ```
 
 **Nota**: Si usas un dispositivo físico, reemplaza `localhost` con la IP de tu computadora:
+
 ```env
 API_URL=http://192.168.1.100:3000/api
 ```
@@ -81,12 +87,14 @@ API_URL=http://192.168.1.100:3000/api
 #### Para la App Web
 
 Crear archivo de variables de entorno:
+
 ```bash
 cd rendimeta-web
 cp ../.env.example .env.local
 ```
 
 Editar `rendimeta-web/.env.local`:
+
 ```env
 DATABASE_URL="postgresql://postgres:password@localhost:5432/rendimeta"
 NEXT_PUBLIC_API_URL="http://localhost:3000"
@@ -139,6 +147,7 @@ npx prisma db seed
 #### Opción B: Instalar manualmente
 
 **App Móvil:**
+
 ```bash
 cd rendimeta-mobile
 flutter pub get
@@ -146,6 +155,7 @@ cd ..
 ```
 
 **App Web:**
+
 ```bash
 cd rendimeta-web
 npm install
@@ -156,6 +166,7 @@ cd ..
 ### 5. Verificar Instalación
 
 #### Verificar Flutter:
+
 ```bash
 cd rendimeta-mobile
 flutter doctor
@@ -164,6 +175,7 @@ flutter doctor
 Resolver cualquier problema que aparezca.
 
 #### Verificar Next.js:
+
 ```bash
 cd rendimeta-web
 npm run build
@@ -183,10 +195,11 @@ npm run build
 #### App Móvil:
 
 1. **Iniciar emulador Android:**
+
    ```bash
    # Listar emuladores disponibles
    flutter emulators
-   
+
    # Iniciar emulador
    flutter emulators --launch <emulator_id>
    ```
@@ -196,10 +209,11 @@ npm run build
    - iOS: Confiar en la computadora desde el dispositivo
 
 3. **Ejecutar app:**
+
    ```bash
    cd rendimeta-mobile
    flutter run
-   
+
    # O con hot reload
    flutter run --hot
    ```
@@ -216,6 +230,7 @@ Abrir navegador en: http://localhost:3000
 ## 🧪 Ejecutar Tests
 
 ### Todos los tests:
+
 ```bash
 ./scripts/test-all.sh
 ```
@@ -223,12 +238,14 @@ Abrir navegador en: http://localhost:3000
 ### Tests individuales:
 
 **Móvil:**
+
 ```bash
 cd rendimeta-mobile
 flutter test
 ```
 
 **Web:**
+
 ```bash
 cd rendimeta-web
 npm run lint
@@ -346,8 +363,8 @@ npx prisma migrate reset
 Si encuentras problemas:
 
 1. Revisa la [documentación](./README.md)
-2. Busca en [Issues existentes](https://github.com/hectorslop1/redimeta-project/issues)
-3. Crea un [nuevo Issue](https://github.com/hectorslop1/redimeta-project/issues/new)
+2. Busca en [Issues existentes](https://github.com/hectorslop1/rendimeta-project/issues)
+3. Crea un [nuevo Issue](https://github.com/hectorslop1/rendimeta-project/issues/new)
 
 ## ✅ Checklist de Configuración
 

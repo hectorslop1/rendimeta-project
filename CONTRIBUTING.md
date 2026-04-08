@@ -45,6 +45,7 @@ rendimeta_project/
 ### Requisitos Previos
 
 #### Para desarrollo móvil:
+
 - Flutter SDK ^3.11.0
 - Dart SDK ^3.11.0
 - Android Studio (para Android)
@@ -52,6 +53,7 @@ rendimeta_project/
 - Emulador o dispositivo físico
 
 #### Para desarrollo web:
+
 - Node.js >= 20.x
 - npm o yarn
 - PostgreSQL >= 14
@@ -60,12 +62,14 @@ rendimeta_project/
 ### Instalación Inicial
 
 1. **Clonar el repositorio:**
+
 ```bash
-git clone https://github.com/hectorslop1/redimeta-project.git
-cd redimeta-project
+git clone https://github.com/hectorslop1/rendimeta-project.git
+cd rendimeta-project
 ```
 
 2. **Instalar todas las dependencias:**
+
 ```bash
 ./scripts/install-all.sh
 ```
@@ -73,18 +77,21 @@ cd redimeta-project
 3. **Configurar variables de entorno:**
 
 Para la app móvil (`.env` en raíz):
+
 ```env
 # Configuración de la app móvil
 API_URL=http://localhost:3000/api
 ```
 
 Para la app web (`rendimeta-web/.env.local`):
+
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/rendimeta"
 NEXT_PUBLIC_API_URL="http://localhost:3000"
 ```
 
 4. **Configurar base de datos (solo web):**
+
 ```bash
 cd rendimeta-web
 npx prisma migrate dev
@@ -104,6 +111,7 @@ git checkout -b feature/nombre-de-la-funcionalidad
 ```
 
 Convenciones de nombres de branches:
+
 - `feature/` - Nueva funcionalidad
 - `fix/` - Corrección de bugs
 - `refactor/` - Refactorización de código
@@ -113,18 +121,21 @@ Convenciones de nombres de branches:
 ### 2. Desarrollar
 
 #### Para cambios en la app móvil:
+
 ```bash
 cd rendimeta-mobile
 flutter run
 ```
 
 #### Para cambios en la app web:
+
 ```bash
 cd rendimeta-web
 npm run dev
 ```
 
 #### Para ambos proyectos:
+
 ```bash
 ./scripts/dev-all.sh
 ```
@@ -152,6 +163,7 @@ git commit -m "feat(mobile): agregar pantalla de estadísticas"
 ```
 
 Tipos de commit:
+
 - `feat` - Nueva funcionalidad
 - `fix` - Corrección de bug
 - `docs` - Cambios en documentación
@@ -161,6 +173,7 @@ Tipos de commit:
 - `chore` - Mantenimiento
 
 Scope (opcional):
+
 - `mobile` - Cambios en rendimeta-mobile
 - `web` - Cambios en rendimeta-web
 - `scripts` - Cambios en scripts
@@ -186,15 +199,16 @@ Luego crea un Pull Request en GitHub hacia `develop`.
 - Nombres de variables en camelCase: `userName`
 
 Ejemplo:
+
 ```dart
 class HomeScreen extends StatelessWidget {
   final String userName;
-  
+
   const HomeScreen({
     Key? key,
     required this.userName,
   }) : super(key: key);
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -215,6 +229,7 @@ class HomeScreen extends StatelessWidget {
 - Usa TypeScript para todo
 
 Ejemplo:
+
 ```typescript
 interface UserProfileProps {
   userId: string;
@@ -283,28 +298,35 @@ feat(mobile,web): integrar sistema de notificaciones
 
 ```markdown
 ## Descripción
+
 Breve descripción de los cambios realizados.
 
 ## Tipo de cambio
+
 - [ ] Nueva funcionalidad
 - [ ] Corrección de bug
 - [ ] Refactorización
 - [ ] Documentación
 
 ## Proyecto afectado
+
 - [ ] rendimeta-mobile
 - [ ] rendimeta-web
 - [ ] Ambos
 
 ## ¿Cómo probar?
+
 Pasos para probar los cambios:
+
 1. ...
 2. ...
 
 ## Screenshots (si aplica)
+
 [Agregar capturas de pantalla]
 
 ## Checklist
+
 - [ ] Tests pasan
 - [ ] Código formateado
 - [ ] Documentación actualizada
