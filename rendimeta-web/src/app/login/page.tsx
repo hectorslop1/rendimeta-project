@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/providers/auth-provider";
 import { LoginForm } from "@/components/auth/login-form";
-import { Fuel, Loader2 } from "lucide-react";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const { user, isLoading } = useAuth();
@@ -27,38 +29,56 @@ export default function LoginPage() {
   if (user) return null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_var(--app-primary-soft),_var(--app-shell-bg)_48%)] px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[color:var(--app-primary-strong)] text-[color:var(--primary-foreground)] shadow-lg">
-            <Fuel className="h-7 w-7" />
+    <>
+      <AnimatedBackground />
+      <div className="relative flex min-h-screen items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
+          {/* Logo Rendimeta */}
+          <div className="mb-8 flex flex-col items-center animate-[fadeIn_0.6s_ease-out]">
+            <Image
+              src="/RendimetaLogo.png"
+              alt="Rendimeta"
+              width={180}
+              height={60}
+              priority
+              className="h-auto w-auto"
+            />
+            <h1 className="mt-4 bg-gradient-to-r from-[#E6007A] via-[#7A28FF] to-[#669bf4] bg-clip-text text-5xl font-bold text-transparent drop-shadow-sm">
+              Rendimeta
+            </h1>
           </div>
-          <h1 className="text-2xl font-bold text-[color:var(--foreground)]">
-            Gas Logística
-          </h1>
-          <p className="mt-1 text-sm text-[color:var(--muted-foreground)]">
-            Panel de Control
-          </p>
-        </div>
 
-        <div className="rounded-xl border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-bg)] p-6 shadow-sm">
-          <LoginForm />
-        </div>
+          {/* Formulario de login */}
+          <div className="rounded-2xl bg-white p-8 shadow-xl shadow-gray-200/50 animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+            <LoginForm />
+          </div>
 
-        {/* --- Usuarios de prueba (temporal) --- */}
-        <TestUsersPanel />
+          {/* RendiChicas endorsement */}
+          <div className="mt-8 flex flex-col items-center gap-2 animate-[fadeIn_1s_ease-out_0.4s_both]">
+            <p className="text-xs text-gray-500">Una herramienta de</p>
+            <Image
+              src="/rendichicas-logo.png"
+              alt="RendiChicas"
+              width={120}
+              height={32}
+              className="h-auto w-auto"
+            />
+          </div>
+
+          {/* --- Usuarios de prueba (temporal) --- */}
+          <div className="animate-[fadeIn_1.2s_ease-out_0.6s_both]">
+            <TestUsersPanel />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
 const TEST_USERS = [
-  { email: "admin@sistema.com", role: "Super Admin", level: 5, color: "rose" },
-  { email: "administrador@sistema.com", role: "Administrador", level: 4, color: "purple" },
-  { email: "gerente.regional@sistema.com", role: "Gerente Regional", level: 3, color: "blue" },
-  { email: "gerente.estacion@sistema.com", role: "Gerente Estación", level: 2, color: "cyan" },
-  { email: "supervisor@sistema.com", role: "Encargado Turno", level: 1, color: "amber" },
-  { email: "empleado@sistema.com", role: "Despachador", level: 0, color: "gray" },
+  { email: "admin@sistema.com", role: "Super Admin", level: 5 },
+  { email: "gerente.regional@sistema.com", role: "Gerente Regional", level: 3 },
+  { email: "supervisor@sistema.com", role: "Supervisor", level: 1 },
 ] as const;
 
 function TestUsersPanel() {
@@ -75,34 +95,34 @@ function TestUsersPanel() {
   }
 
   return (
-    <div className="mt-4 rounded-xl border border-dashed border-amber-300 bg-amber-50/70 p-4 dark:border-amber-700 dark:bg-amber-900/10">
-      <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-        Acceso rápido de prueba
+    <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50/50 p-4">
+      <p className="mb-3 text-center text-[10px] font-semibold uppercase tracking-widest text-amber-600">
+        Acceso Rápido (Desarrollo)
       </p>
-      <div className="grid gap-1.5">
+      <div className="grid gap-2">
         {TEST_USERS.map((u) => (
           <button
             key={u.email}
             onClick={() => quickLogin(u.email)}
             disabled={loading !== null}
             data-testid={`quick-login-${u.email}`}
-            className="flex items-center justify-between rounded-lg border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-bg)] px-3 py-2 text-left text-sm transition-colors hover:border-[color:var(--app-primary-strong)] hover:bg-[color:var(--app-hover-bg)] disabled:opacity-50"
+            className="group flex items-center justify-between rounded-lg bg-white px-4 py-2.5 text-left text-sm shadow-sm transition-all hover:shadow-md hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
           >
-            <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+            <div className="flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-purple-500 text-xs font-bold text-white">
                 {u.level}
               </span>
-              <div>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {u.role}
-                </span>
-                <span className="ml-2 text-xs text-gray-400">{u.email}</span>
+              <div className="flex flex-col">
+                <span className="font-semibold text-gray-800">{u.role}</span>
+                <span className="text-xs text-gray-500">{u.email}</span>
               </div>
             </div>
             {loading === u.email ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-rose-500" />
+              <Loader2 className="h-4 w-4 animate-spin text-pink-500" />
             ) : (
-              <span className="text-xs text-gray-400">admin123</span>
+              <span className="text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                admin123
+              </span>
             )}
           </button>
         ))}

@@ -28,7 +28,9 @@ export function Sidebar() {
     if (typeof window === "undefined") return false;
     return window.localStorage.getItem(COLLAPSE_STORAGE_KEY) === "true";
   });
-  const [sectionCollapse, setSectionCollapse] = useState<Record<string, boolean>>(() => {
+  const [sectionCollapse, setSectionCollapse] = useState<
+    Record<string, boolean>
+  >(() => {
     if (typeof window === "undefined") return {};
 
     try {
@@ -42,12 +44,18 @@ export function Sidebar() {
   const { navigationConfig } = useAppShell();
 
   const userLevel = user?.role.level ?? -1;
-  const navigationModel = buildNavigationModel(navigationConfig, pathname, userLevel);
+  const navigationModel = buildNavigationModel(
+    navigationConfig,
+    pathname,
+    userLevel,
+  );
   const visibleSections = navigationModel.sidebarSections;
   const horizontalShortcutSections = navigationModel.horizontalSections.filter(
-    (section) => section.items.length > 0
+    (section) => section.items.length > 0,
   );
-  const hasAnalyticsSection = visibleSections.some((section) => section.id === "analytics");
+  const hasAnalyticsSection = visibleSections.some(
+    (section) => section.id === "analytics",
+  );
 
   useEffect(() => {
     window.localStorage.setItem(COLLAPSE_STORAGE_KEY, String(collapsed));
@@ -56,15 +64,19 @@ export function Sidebar() {
   useEffect(() => {
     window.localStorage.setItem(
       SECTION_COLLAPSE_STORAGE_KEY,
-      JSON.stringify(sectionCollapse)
+      JSON.stringify(sectionCollapse),
     );
   }, [sectionCollapse]);
 
   useEffect(() => {
-    const nextState = visibleSections.reduce<Record<string, boolean>>((acc, section) => {
-      acc[section.id] = sectionCollapse[section.id] ?? section.collapsedByDefault;
-      return acc;
-    }, {});
+    const nextState = visibleSections.reduce<Record<string, boolean>>(
+      (acc, section) => {
+        acc[section.id] =
+          sectionCollapse[section.id] ?? section.collapsedByDefault;
+        return acc;
+      },
+      {},
+    );
 
     setSectionCollapse((current) => {
       const currentKeys = Object.keys(current);
@@ -102,7 +114,7 @@ export function Sidebar() {
           "fixed inset-y-0 left-0 z-50 flex flex-col border-r bg-[color:var(--app-sidebar-bg)] text-[color:var(--app-sidebar-text)] transition-all duration-200 lg:static lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
           collapsed ? "lg:w-16" : "lg:w-64",
-          "w-64"
+          "w-64",
         )}
         style={{ borderColor: "var(--app-sidebar-border)" }}
       >
@@ -120,11 +132,11 @@ export function Sidebar() {
             ) : null}
             <span
               className={cn(
-                "whitespace-nowrap text-2xl font-extrabold tracking-tight text-[color:var(--app-primary-strong)]",
-                collapsed && "lg:hidden"
+                "whitespace-nowrap text-2xl font-extrabold tracking-tight bg-gradient-to-r from-[#E6007A] to-[#7A28FF] bg-clip-text text-transparent",
+                collapsed && "lg:hidden",
               )}
             >
-              Gas Logística
+              Rendimeta
             </span>
           </Link>
 
@@ -173,7 +185,7 @@ export function Sidebar() {
                         "flex w-full items-center justify-between gap-3 px-3 text-left",
                         section.collapsible
                           ? "hover:text-[color:var(--app-sidebar-text)]"
-                          : "cursor-default"
+                          : "cursor-default",
                       )}
                     >
                       <div>
@@ -211,11 +223,11 @@ export function Sidebar() {
                             title={collapsed ? item.title : undefined}
                             data-testid={`sidebar-item-${item.id}`}
                             className={cn(
-                              "flex items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                              "group flex items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                               collapsed ? "lg:justify-center lg:px-0" : "gap-3",
                               active
-                                ? "bg-[color:var(--app-primary-soft)] text-[color:var(--app-sidebar-text)]"
-                                : "text-[color:var(--app-sidebar-muted)] hover:bg-white/10 hover:text-[color:var(--app-sidebar-text)]"
+                                ? "bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-white shadow-lg shadow-pink-500/20 border border-pink-500/30"
+                                : "text-[color:var(--app-sidebar-muted)] hover:bg-white/10 hover:text-white hover:translate-x-1",
                             )}
                           >
                             <Icon
@@ -223,7 +235,7 @@ export function Sidebar() {
                                 "h-5 w-5 shrink-0",
                                 active
                                   ? "text-[color:var(--app-primary-strong)]"
-                                  : "text-[color:var(--app-sidebar-muted)]"
+                                  : "text-[color:var(--app-sidebar-muted)]",
                               )}
                             />
                             <span className={cn(collapsed && "lg:hidden")}>
@@ -262,7 +274,7 @@ export function Sidebar() {
             <p
               className={cn(
                 "text-xs text-[color:var(--app-sidebar-muted)]",
-                collapsed && "lg:text-center"
+                collapsed && "lg:text-center",
               )}
             >
               {collapsed ? (
@@ -285,7 +297,9 @@ function HorizontalShortcutGroup({
   onNavigate,
 }: {
   collapsed: boolean;
-  horizontalShortcutSections: ReturnType<typeof buildNavigationModel>["horizontalSections"];
+  horizontalShortcutSections: ReturnType<
+    typeof buildNavigationModel
+  >["horizontalSections"];
   onNavigate: () => void;
 }) {
   if (horizontalShortcutSections.length === 0) return null;
@@ -303,7 +317,9 @@ function HorizontalShortcutGroup({
       <ul className="space-y-1">
         {horizontalShortcutSections.map((section) => {
           const targetItem = section.items[0];
-          const Icon = targetItem ? ICON_MAP[targetItem.icon] ?? LineChart : LineChart;
+          const Icon = targetItem
+            ? (ICON_MAP[targetItem.icon] ?? LineChart)
+            : LineChart;
 
           if (!targetItem) return null;
 
@@ -319,7 +335,7 @@ function HorizontalShortcutGroup({
                   collapsed ? "lg:justify-center lg:px-0" : "gap-3",
                   section.active
                     ? "bg-[color:var(--app-primary-soft)] text-[color:var(--app-sidebar-text)]"
-                    : "text-[color:var(--app-sidebar-muted)] hover:bg-white/10 hover:text-[color:var(--app-sidebar-text)]"
+                    : "text-[color:var(--app-sidebar-muted)] hover:bg-white/10 hover:text-[color:var(--app-sidebar-text)]",
                 )}
               >
                 <Icon
@@ -327,7 +343,7 @@ function HorizontalShortcutGroup({
                     "h-5 w-5 shrink-0",
                     section.active
                       ? "text-[color:var(--app-primary-strong)]"
-                      : "text-[color:var(--app-sidebar-muted)]"
+                      : "text-[color:var(--app-sidebar-muted)]",
                   )}
                 />
                 <span className={cn("flex-1", collapsed && "lg:hidden")}>

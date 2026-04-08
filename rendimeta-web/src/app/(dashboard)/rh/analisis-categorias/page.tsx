@@ -17,12 +17,12 @@ import {
 } from "recharts";
 
 const CHART_COLORS = [
-  "#e11d48",
-  "#2563eb",
-  "#16a34a",
+  "#6366f1",
+  "#06b6d4",
+  "#22c55e",
   "#f59e0b",
+  "#3b82f6",
   "#8b5cf6",
-  "#ec4899",
   "#14b8a6",
   "#f97316",
 ];

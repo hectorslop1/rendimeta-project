@@ -4,7 +4,11 @@ import { useOverviewKpis, useTrends, useRankings } from "@/hooks/use-kpi-data";
 import { useFilters } from "@/providers/filter-provider";
 import { KpiCard } from "@/components/domain/shared";
 import { DashboardLineChart } from "@/components/charts";
-import { KpiCardSkeleton, ChartSkeleton, Skeleton } from "@/components/ui/skeleton";
+import {
+  KpiCardSkeleton,
+  ChartSkeleton,
+  Skeleton,
+} from "@/components/ui/skeleton";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import { Map, Building2, Fuel, TrendingUp, TrendingDown } from "lucide-react";
 import type { OverviewKpis } from "@/types";
@@ -37,7 +41,7 @@ export default function OverviewPage() {
   const { data: trendData, isLoading: isLoadingTrend } = useTrends(
     "operational",
     "fuelVolumeLiters",
-    granularity
+    granularity,
   );
   const { data: rankings, isLoading: isLoadingRankings } = useRankings();
 
@@ -46,17 +50,17 @@ export default function OverviewPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
+      <div className="animate-[fadeIn_0.5s_ease-out]">
+        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
           Vista General
         </h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-2 text-sm text-gray-600">
           Resumen de KPIs de todas las estaciones
         </p>
       </div>
 
       {/* Geographic Summary Cards */}
-      <section>
+      <section className="animate-[fadeIn_0.6s_ease-out_0.1s_both]">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {isLoadingRankings ? (
             Array.from({ length: 3 }).map((_, i) => (
@@ -88,22 +92,20 @@ export default function OverviewPage() {
       </section>
 
       {/* KPI Cards Grid */}
-      <section>
+      <section className="animate-[fadeIn_0.7s_ease-out_0.2s_both]">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {isLoadingKpis
             ? Array.from({ length: 8 }).map((_, i) => (
                 <KpiCardSkeleton key={i} />
               ))
             : kpis &&
-              KPI_KEYS.map((key) => (
-                <KpiCard key={key} data={kpis[key]} />
-              ))}
+              KPI_KEYS.map((key) => <KpiCard key={key} data={kpis[key]} />)}
         </div>
       </section>
 
       {/* Trends Section */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+      <section className="space-y-4 animate-[fadeIn_0.8s_ease-out_0.3s_both]">
+        <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
           Tendencias
         </h2>
         {isLoadingTrend ? (
@@ -122,8 +124,8 @@ export default function OverviewPage() {
       </section>
 
       {/* Station Rankings */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+      <section className="space-y-4 animate-[fadeIn_0.9s_ease-out_0.4s_both]">
+        <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
           Ranking de Estaciones por Ingreso
         </h2>
         {isLoadingRankings ? (
@@ -164,18 +166,21 @@ function GeoCard({
   sublabel: string;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-950">
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-gray-50 dark:bg-gray-900">
-        {icon}
-      </div>
-      <div>
-        <p className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
-          {value}
-        </p>
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {label}
-        </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">{sublabel}</p>
+    <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1">
+      {/* Gradiente de fondo al hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-pink-50/50 via-transparent to-purple-50/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      <div className="relative flex items-center gap-4">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500/10 to-purple-500/10 ring-1 ring-pink-500/20 transition-all duration-300 group-hover:scale-110 group-hover:ring-pink-500/40">
+          {icon}
+        </div>
+        <div>
+          <p className="text-4xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+            {value}
+          </p>
+          <p className="text-sm font-semibold text-gray-700">{label}</p>
+          <p className="text-xs text-gray-500">{sublabel}</p>
+        </div>
       </div>
     </div>
   );

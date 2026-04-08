@@ -2,7 +2,9 @@
 
 import { useState, type FormEvent } from "react";
 import { useAuth } from "@/providers/auth-provider";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { FloatingInput } from "@/components/ui/floating-input";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { Loader2, Eye, EyeOff, Mail, Lock } from "lucide-react";
 
 export function LoginForm() {
   const { login } = useAuth();
@@ -30,60 +32,46 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
+        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
       <div>
-        <label
-          htmlFor="email"
-          className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
-          Correo electrónico
-        </label>
-        <input
+        <FloatingInput
           id="email"
           type="email"
+          label="Correo electrónico"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           autoComplete="email"
-          className="w-full rounded-lg border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-bg)] px-3 py-2.5 text-sm text-[color:var(--foreground)] outline-none transition-colors focus:border-[color:var(--app-primary-strong)] focus:ring-2 focus:ring-[color:var(--app-primary-soft)]"
-          placeholder="correo@empresa.com"
+          icon={<Mail className="h-5 w-5" />}
         />
       </div>
 
-      <div>
-        <label
-          htmlFor="password"
-          className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
+      <div className="relative">
+        <FloatingInput
+          id="password"
+          type={showPassword ? "text" : "password"}
+          label="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          autoComplete="current-password"
+          icon={<Lock className="h-5 w-5" />}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-600 transition-colors z-10"
         >
-          Contraseña
-        </label>
-        <div className="relative">
-          <input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-            className="w-full rounded-lg border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-bg)] px-3 py-2.5 pr-10 text-sm text-[color:var(--foreground)] outline-none transition-colors focus:border-[color:var(--app-primary-strong)] focus:ring-2 focus:ring-[color:var(--app-primary-soft)]"
-            placeholder="••••••••"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--muted-foreground)] hover:text-[color:var(--foreground)]"
-          >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </button>
-        </div>
+          {showPassword ? (
+            <EyeOff className="h-5 w-5" />
+          ) : (
+            <Eye className="h-5 w-5" />
+          )}
+        </button>
       </div>
 
       <div className="flex items-center gap-2">
@@ -92,24 +80,17 @@ export function LoginForm() {
           type="checkbox"
           checked={remember}
           onChange={(e) => setRemember(e.target.checked)}
-          className="h-4 w-4 rounded border-[color:var(--app-panel-border)] text-[color:var(--app-primary-strong)] focus:ring-[color:var(--app-primary-soft)]"
+          className="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
         />
-        <label
-          htmlFor="remember"
-          className="text-sm text-[color:var(--muted-foreground)]"
-        >
+        <label htmlFor="remember" className="text-sm text-gray-600">
           Recordar sesión
         </label>
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-[color:var(--app-primary-strong)] px-4 py-2.5 text-sm font-semibold text-[color:var(--primary-foreground)] transition-opacity hover:opacity-90 disabled:opacity-50"
-      >
+      <ShimmerButton type="submit" disabled={loading} className="w-full">
         {loading && <Loader2 className="h-4 w-4 animate-spin" />}
         Iniciar Sesión
-      </button>
+      </ShimmerButton>
     </form>
   );
 }

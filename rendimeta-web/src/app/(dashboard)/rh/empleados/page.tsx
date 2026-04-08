@@ -13,6 +13,7 @@ import { FormModal } from "@/components/crud/form-modal";
 import { SearchInput } from "@/components/crud/search-input";
 import { Loader2, Plus, Eye } from "lucide-react";
 import Link from "next/link";
+import { EmployeeAvatar } from "@/components/ui/employee-avatar";
 
 const STATUS_OPTIONS = [
   { value: "ACTIVE", label: "Activo" },
@@ -27,8 +28,7 @@ const STATUS_COLORS: Record<string, string> = {
   INACTIVE: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300",
   ON_LEAVE:
     "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  TERMINATED:
-    "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+  TERMINATED: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
 };
 
 export default function EmpleadosPage() {
@@ -54,12 +54,12 @@ export default function EmpleadosPage() {
   const updateMutation = useUpdateEmployee();
   const deleteMutation = useDeleteEmployee();
 
-  const rolesArr = Array.isArray(roles) ? roles : roles?.data ?? [];
-  const shiftsArr = Array.isArray(shifts) ? shifts : shifts?.data ?? [];
+  const rolesArr = Array.isArray(roles) ? roles : (roles?.data ?? []);
+  const shiftsArr = Array.isArray(shifts) ? shifts : (shifts?.data ?? []);
   const stationsArr = Array.isArray(stations) ? stations : [];
   const employeesArr = Array.isArray(employees)
     ? employees
-    : employees?.data ?? [];
+    : (employees?.data ?? []);
 
   // Filter by shift client-side if needed
   const filtered = filterShift
@@ -71,7 +71,18 @@ export default function EmpleadosPage() {
     {
       key: "name",
       label: "Nombre",
-      render: (row: any) => `${row.firstName} ${row.lastName}`,
+      render: (row: any) => (
+        <div className="flex items-center gap-2.5">
+          <EmployeeAvatar
+            firstName={row.firstName}
+            lastName={row.lastName}
+            size="sm"
+          />
+          <span className="font-medium">
+            {row.firstName} {row.lastName}
+          </span>
+        </div>
+      ),
     },
     {
       key: "role",
@@ -104,9 +115,7 @@ export default function EmpleadosPage() {
       key: "hireDate",
       label: "Fecha Ingreso",
       render: (row: any) =>
-        row.hireDate
-          ? new Date(row.hireDate).toLocaleDateString("es-MX")
-          : "—",
+        row.hireDate ? new Date(row.hireDate).toLocaleDateString("es-MX") : "—",
     },
     {
       key: "actions",

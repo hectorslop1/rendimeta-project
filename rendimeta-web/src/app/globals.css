@@ -1,4 +1,59 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
 
 :root {
   --background: #ffffff;
@@ -8,24 +63,41 @@
   --border: #e5e5e5;
   --card: #ffffff;
   --card-foreground: #171717;
-  --primary: #e11d48;
+  
+  /* Rendimeta Branding Colors */
+  --primary: #E6007A;
   --primary-foreground: #ffffff;
-  --accent: #fef2f2;
-  --accent-foreground: #be123c;
-  --app-primary-soft: #ffe4e6;
-  --app-primary-strong: #e11d48;
+  --secondary: #7A28FF;
+  --tertiary: #2DE2E2;
+  --accent: #fef2f8;
+  --accent-foreground: #E6007A;
+  
+  /* App Colors */
+  --app-primary-soft: #fce7f3;
+  --app-primary-strong: #E6007A;
+  --app-secondary-strong: #7A28FF;
+  --app-tertiary-strong: #2DE2E2;
   --app-accent-strong: #f97316;
-  --app-shell-bg: #f8fafc;
+  --app-shell-bg: #fafafa;
   --app-panel-bg: #ffffff;
-  --app-panel-border: #e2e8f0;
-  --app-subtle-bg: #f8fafc;
-  --app-hover-bg: #fdf2f8;
-  --app-sidebar-bg: #111827;
+  --app-panel-border: #f0f0f0;
+  --app-subtle-bg: #fafafa;
+  --app-hover-bg: #fef2f8;
+  
+  /* Sidebar - Moderno con gradiente sutil */
+  --app-sidebar-bg: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
   --app-sidebar-text: #f8fafc;
   --app-sidebar-muted: #94a3b8;
   --app-sidebar-border: rgba(255, 255, 255, 0.1);
+  --app-sidebar-hover: rgba(230, 0, 122, 0.1);
+  --app-sidebar-active: rgba(230, 0, 122, 0.15);
+  
+  /* Topbar */
   --app-topbar-bg: #ffffff;
   --app-topbar-text: #111827;
+  --app-topbar-border: #f0f0f0;
+  
+  /* Typography */
   --app-title-color: #0f172a;
   --app-title-muted: #64748b;
   --app-table-header-bg: #f8fafc;
@@ -42,20 +114,43 @@
   --app-danger-soft: #fee2e2;
   --app-info: #0284c7;
   --app-info-soft: #e0f2fe;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --muted: #1c1c1c;
-  --muted-foreground: #a3a3a3;
-  --border: #2e2e2e;
-  --card: #141414;
-  --card-foreground: #ededed;
-  --primary: #fb7185;
-  --primary-foreground: #1a1a1a;
-  --accent: #1f1215;
-  --accent-foreground: #fda4af;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
   --app-primary-soft: #3f1d2e;
   --app-primary-strong: #fb7185;
   --app-accent-strong: #f97316;
@@ -86,6 +181,26 @@
   --app-danger-soft: #3f1a1f;
   --app-info: #38bdf8;
   --app-info-soft: #103547;
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @theme inline {
@@ -100,12 +215,57 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --font-sans: "Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display), "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "SFMono-Regular", "Cascadia Code", "Fira Code", monospace;
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-destructive: var(--destructive);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 body {
   background: var(--app-shell-bg);
-  color: var(--foreground);
-  font-family: "Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans), "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display), "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

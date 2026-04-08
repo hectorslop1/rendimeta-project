@@ -37,11 +37,18 @@ export function TreemapChart({
 
     const blockPreventDefault = (e: Event) => {
       // Override preventDefault so ECharts can't block scrolling
-      Object.defineProperty(e, "preventDefault", { value: () => {}, writable: false });
+      Object.defineProperty(e, "preventDefault", {
+        value: () => {},
+        writable: false,
+      });
     };
 
-    el.addEventListener("wheel", blockPreventDefault, { capture: true, passive: true });
-    return () => el.removeEventListener("wheel", blockPreventDefault, { capture: true });
+    el.addEventListener("wheel", blockPreventDefault, {
+      capture: true,
+      passive: true,
+    });
+    return () =>
+      el.removeEventListener("wheel", blockPreventDefault, { capture: true });
   }, []);
 
   const option = {
@@ -71,9 +78,9 @@ export function TreemapChart({
         width: "100%",
         height: "100%",
         roam: false,
-        squareRatio: 0.5 * (1 + Math.sqrt(5)),  // golden ratio for balanced layout
+        squareRatio: 0.5 * (1 + Math.sqrt(5)), // golden ratio for balanced layout
         nodeClick: "zoomToNode" as const,
-        visibleMin: 300,  // minimum area in px² — ensures small states remain visible
+        visibleMin: 300, // minimum area in px² — ensures small states remain visible
         breadcrumb: {
           show: true,
           bottom: 5,
@@ -143,7 +150,7 @@ export function TreemapChart({
               textShadowColor: "rgba(0,0,0,0.5)",
               textShadowBlur: 4,
             },
-            color: ["#e11d48", "#f97316", "#3b82f6", "#22c55e", "#8b5cf6"],
+            color: ["#6366f1", "#06b6d4", "#3b82f6", "#22c55e", "#8b5cf6"],
           },
           {
             // Level 1: Cities — semi-dark header
@@ -190,7 +197,7 @@ export function TreemapChart({
     <div
       className={cn(
         "rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950",
-        className
+        className,
       )}
     >
       {(title || subtitle) && (

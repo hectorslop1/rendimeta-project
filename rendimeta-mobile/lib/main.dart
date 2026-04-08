@@ -6,12 +6,16 @@ import 'core/game_state.dart';
 import 'core/theme_notifier.dart';
 import 'theme/app_theme.dart';
 import 'features/splash/splash_screen.dart';
+import 'services/api_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await dotenv.load(fileName: '.env');
   } catch (_) {}
+
+  await SupabaseClientService.initialize();
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const RendimetaApp());
 }

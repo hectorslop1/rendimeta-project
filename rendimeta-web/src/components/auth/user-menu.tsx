@@ -29,32 +29,32 @@ export function UserMenu() {
       <div ref={ref} className="relative">
         <button
           onClick={() => setOpen(!open)}
-          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all hover:bg-pink-50 border border-transparent hover:border-pink-200"
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-purple-500 text-white shadow-sm">
             <User className="h-4 w-4" />
           </div>
-          <span className="hidden max-w-[120px] truncate text-gray-700 dark:text-gray-300 md:block">
+          <span className="hidden max-w-[120px] truncate font-medium text-gray-700 md:block">
             {user.firstName}
           </span>
           <ChevronDown
             className={cn(
-              "hidden h-3.5 w-3.5 text-gray-400 transition-transform md:block",
-              open && "rotate-180"
+              "hidden h-4 w-4 text-gray-400 transition-transform md:block",
+              open && "rotate-180",
             )}
           />
         </button>
 
         {open && (
-          <div className="absolute right-0 top-full z-50 mt-1 w-56 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-            <div className="border-b border-gray-100 px-3 py-2 dark:border-gray-800">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-xl border border-gray-100 bg-white py-2 shadow-xl animate-[scaleIn_0.15s_ease-out]">
+            <div className="border-b border-gray-100 px-4 py-3">
+              <p className="text-sm font-semibold text-gray-900">
                 {user.firstName} {user.lastName}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-0.5 text-xs font-medium text-pink-600">
                 {user.role.name}
               </p>
-              <p className="truncate text-xs text-gray-400 dark:text-gray-500">
+              <p className="mt-1 truncate text-xs text-gray-500">
                 {user.email}
               </p>
             </div>
@@ -64,19 +64,19 @@ export function UserMenu() {
                 setOpen(false);
                 setShowPasswordModal(true);
               }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-pink-50"
             >
-              <Key className="h-4 w-4" />
+              <Key className="h-4 w-4 text-gray-400" />
               Cambiar contraseña
             </button>
 
-            <div className="border-t border-gray-100 dark:border-gray-800">
+            <div className="border-t border-gray-100 mt-1 pt-1">
               <button
                 onClick={() => {
                   setOpen(false);
                   logout();
                 }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-red-600 transition-colors hover:bg-red-50"
               >
                 <LogOut className="h-4 w-4" />
                 Cerrar sesión

@@ -1,6 +1,8 @@
-# Rendimeta - Monorepo
+# Rendimeta
 
-Monorepo unificado del proyecto **Rendimeta**, que integra la aplicación móvil y la plataforma web para la gestión de productividad de despachadores.
+> **Una herramienta de RendiChicas**
+
+Monorepo unificado del proyecto **Rendimeta**, que integra la aplicación móvil y la plataforma web para la gestión y productividad de estaciones de servicio.
 
 ## 📁 Estructura del Proyecto
 
@@ -18,14 +20,18 @@ rendimeta_project/
 ### 📱 Rendimeta Mobile
 
 - **Tecnología**: Flutter (Dart)
-- **Descripción**: App móvil de productividad para despachadores
+- **Descripción**: App móvil optimizada para vendedores/despachadores
+- **Usuarios**: Vendedores, Supervisores, Gerencia
+- **Características**: Gamificación, tracking en tiempo real, asistente de voz
 - **Directorio**: `./rendimeta-mobile/`
 - **Repositorio original**: https://github.com/hectorslop1/rendimeta.git
 
 ### 🌐 Rendimeta Web
 
 - **Tecnología**: Next.js 16 + React 19 + TypeScript
-- **Descripción**: Dashboard web para gestión y análisis
+- **Descripción**: Dashboard web para gerencia y administración
+- **Usuarios**: Gerencia, Administración, Supervisores
+- **Características**: Analytics, reportes, gestión de estaciones
 - **Directorio**: `./rendimeta-web/`
 - **Repositorio original**: https://github.com/CB-Luna/gaslogistica.git
 
@@ -68,7 +74,52 @@ cd rendimeta-web
 npm install
 ```
 
-## 🏃 Desarrollo
+## 🚀 Inicio Rápido (Recomendado)
+
+### Script Automatizado - Selector Interactivo
+
+El método más fácil para iniciar cualquier aplicación:
+
+```bash
+./dev.sh
+```
+
+Este script te permite:
+
+- ✅ Elegir qué app iniciar (web, móvil o ambas)
+- ✅ Detiene procesos existentes automáticamente
+- ✅ Instala/actualiza dependencias si es necesario
+- ✅ Abre el navegador automáticamente (web)
+- ✅ Limpia caché y configura todo por ti
+
+### Script Directo - Solo App Web
+
+Para iniciar directamente la app web sin menú:
+
+```bash
+cd rendimeta-web
+./dev.sh
+```
+
+Esto automáticamente:
+
+1. Detiene procesos en puerto 3000
+2. Instala dependencias si faltan
+3. Limpia caché de Next.js
+4. Inicia servidor en `http://localhost:3000`
+5. Abre el navegador en la página de login
+
+**Usuarios de prueba disponibles:**
+
+- `admin@sistema.com` / `admin123` (Super Admin)
+- `gerente.regional@sistema.com` / `admin123` (Gerente Regional)
+- `supervisor@sistema.com` / `admin123` (Encargado Turno)
+
+---
+
+## 🏃 Desarrollo Manual
+
+Si prefieres ejecutar los comandos manualmente:
 
 ### Ejecutar ambos proyectos:
 
@@ -89,6 +140,7 @@ flutter run
 
 ```bash
 cd rendimeta-web
+npm install  # Primera vez
 npm run dev
 ```
 

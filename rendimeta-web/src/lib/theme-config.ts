@@ -54,34 +54,34 @@ interface RGB {
   b: number;
 }
 
-export const THEME_STORAGE_KEY = "gaslogistica.themeConfig";
-export const THEME_TEMPLATE_LIBRARY_STORAGE_KEY = "gaslogistica.themeTemplates";
+export const THEME_STORAGE_KEY = "rendimeta.themeConfig";
+export const THEME_TEMPLATE_LIBRARY_STORAGE_KEY = "rendimeta.themeTemplates";
 
 export const defaultThemeConfig: ThemeConfig = {
-  name: "Gas Logística Core",
-  code: "GAS-CORE",
-  primaryColor: "#E11D48",
-  secondaryColor: "#111827",
-  accentColor: "#F97316",
-  backgroundColor: "#F8FAFC",
+  name: "Rendimeta Core",
+  code: "RENDIMETA",
+  primaryColor: "#E6007A",
+  secondaryColor: "#7A28FF",
+  accentColor: "#2DE2E2",
+  backgroundColor: "#F8F9FA",
   surfaceColor: "#FFFFFF",
   borderColor: "#E2E8F0",
-  sidebarColor: "#111827",
-  sidebarTextColor: "#F8FAFC",
+  sidebarColor: "#2D3436",
+  sidebarTextColor: "#F8F9FA",
   topbarColor: "#FFFFFF",
-  topbarTextColor: "#111827",
-  titleColor: "#0F172A",
-  subtitleColor: "#64748B",
-  tableHeaderBg: "#F8FAFC",
-  tableHeaderTextColor: "#475569",
+  topbarTextColor: "#2D3436",
+  titleColor: "#2D3436",
+  subtitleColor: "#636E72",
+  tableHeaderBg: "#F8F9FA",
+  tableHeaderTextColor: "#636E72",
   tableRowBg: "#FFFFFF",
   tableRowAltBg: "#FCFDFE",
-  tableRowHoverBg: "#FDF2F8",
-  tableRowTextColor: "#0F172A",
-  successColor: "#16A34A",
-  warningColor: "#D97706",
-  dangerColor: "#DC2626",
-  infoColor: "#0284C7",
+  tableRowHoverBg: "#FFF0F7",
+  tableRowTextColor: "#2D3436",
+  successColor: "#00B894",
+  warningColor: "#FDAA5E",
+  dangerColor: "#FF6B6B",
+  infoColor: "#2DE2E2",
   isDarkMode: false,
 };
 
@@ -107,14 +107,18 @@ function parseHexColor(value: string): RGB | null {
 
 function toHexColor({ r, g, b }: RGB) {
   const channels = [r, g, b].map((channel) =>
-    Math.max(0, Math.min(255, Math.round(channel))).toString(16).padStart(2, "0")
+    Math.max(0, Math.min(255, Math.round(channel)))
+      .toString(16)
+      .padStart(2, "0"),
   );
   return `#${channels.join("").toUpperCase()}`;
 }
 
 export function mixColors(base: string, target: string, ratio: number) {
-  const from = parseHexColor(base) ?? parseHexColor(defaultThemeConfig.primaryColor)!;
-  const to = parseHexColor(target) ?? parseHexColor(defaultThemeConfig.surfaceColor)!;
+  const from =
+    parseHexColor(base) ?? parseHexColor(defaultThemeConfig.primaryColor)!;
+  const to =
+    parseHexColor(target) ?? parseHexColor(defaultThemeConfig.surfaceColor)!;
   const clampedRatio = Math.max(0, Math.min(1, ratio));
 
   return toHexColor({
@@ -141,15 +145,15 @@ function buildThemePreset(overrides: Partial<ThemeConfig>): ThemeConfig {
 
 export const themePresetGroups: ThemePresetGroup[] = [
   {
-    section: "Operación",
+    section: "Rendimeta",
     items: [
       defaultThemeConfig,
       buildThemePreset({
-        name: "Ruta Ejecutiva",
-        code: "EXEC",
-        primaryColor: "#0F4C81",
-        secondaryColor: "#0D1B2A",
-        accentColor: "#F4A261",
+        name: "Rendimeta Púrpura",
+        code: "PURPLE",
+        primaryColor: "#7A28FF",
+        secondaryColor: "#E6007A",
+        accentColor: "#2DE2E2",
         backgroundColor: "#F5F9FC",
         surfaceColor: "#FFFFFF",
         borderColor: "#D8E4EE",
@@ -172,11 +176,11 @@ export const themePresetGroups: ThemePresetGroup[] = [
         isDarkMode: false,
       }),
       buildThemePreset({
-        name: "Bosque Operativo",
-        code: "FOREST",
-        primaryColor: "#2E7D32",
-        secondaryColor: "#173A1A",
-        accentColor: "#81C784",
+        name: "Rendimeta Cyan",
+        code: "CYAN",
+        primaryColor: "#2DE2E2",
+        secondaryColor: "#7A28FF",
+        accentColor: "#E6007A",
         backgroundColor: "#F4FBF5",
         surfaceColor: "#FFFFFF",
         borderColor: "#DCE9DE",
@@ -262,46 +266,59 @@ export const themePresetGroups: ThemePresetGroup[] = [
 ];
 
 export function sanitizeThemeConfig(
-  theme: Partial<ThemeConfig> | null | undefined
+  theme: Partial<ThemeConfig> | null | undefined,
 ): ThemeConfig {
   return {
     name: theme?.name?.trim() || defaultThemeConfig.name,
     code: theme?.code?.trim() || defaultThemeConfig.code,
     primaryColor:
-      normalizeHexColor(theme?.primaryColor || "") || defaultThemeConfig.primaryColor,
+      normalizeHexColor(theme?.primaryColor || "") ||
+      defaultThemeConfig.primaryColor,
     secondaryColor:
-      normalizeHexColor(theme?.secondaryColor || "") || defaultThemeConfig.secondaryColor,
+      normalizeHexColor(theme?.secondaryColor || "") ||
+      defaultThemeConfig.secondaryColor,
     accentColor:
-      normalizeHexColor(theme?.accentColor || "") || defaultThemeConfig.accentColor,
+      normalizeHexColor(theme?.accentColor || "") ||
+      defaultThemeConfig.accentColor,
     backgroundColor:
-      normalizeHexColor(theme?.backgroundColor || "") || defaultThemeConfig.backgroundColor,
+      normalizeHexColor(theme?.backgroundColor || "") ||
+      defaultThemeConfig.backgroundColor,
     surfaceColor:
-      normalizeHexColor(theme?.surfaceColor || "") || defaultThemeConfig.surfaceColor,
+      normalizeHexColor(theme?.surfaceColor || "") ||
+      defaultThemeConfig.surfaceColor,
     borderColor:
-      normalizeHexColor(theme?.borderColor || "") || defaultThemeConfig.borderColor,
+      normalizeHexColor(theme?.borderColor || "") ||
+      defaultThemeConfig.borderColor,
     sidebarColor:
-      normalizeHexColor(theme?.sidebarColor || "") || defaultThemeConfig.sidebarColor,
+      normalizeHexColor(theme?.sidebarColor || "") ||
+      defaultThemeConfig.sidebarColor,
     sidebarTextColor:
       normalizeHexColor(theme?.sidebarTextColor || "") ||
       defaultThemeConfig.sidebarTextColor,
     topbarColor:
-      normalizeHexColor(theme?.topbarColor || "") || defaultThemeConfig.topbarColor,
+      normalizeHexColor(theme?.topbarColor || "") ||
+      defaultThemeConfig.topbarColor,
     topbarTextColor:
       normalizeHexColor(theme?.topbarTextColor || "") ||
       defaultThemeConfig.topbarTextColor,
     titleColor:
-      normalizeHexColor(theme?.titleColor || "") || defaultThemeConfig.titleColor,
+      normalizeHexColor(theme?.titleColor || "") ||
+      defaultThemeConfig.titleColor,
     subtitleColor:
-      normalizeHexColor(theme?.subtitleColor || "") || defaultThemeConfig.subtitleColor,
+      normalizeHexColor(theme?.subtitleColor || "") ||
+      defaultThemeConfig.subtitleColor,
     tableHeaderBg:
-      normalizeHexColor(theme?.tableHeaderBg || "") || defaultThemeConfig.tableHeaderBg,
+      normalizeHexColor(theme?.tableHeaderBg || "") ||
+      defaultThemeConfig.tableHeaderBg,
     tableHeaderTextColor:
       normalizeHexColor(theme?.tableHeaderTextColor || "") ||
       defaultThemeConfig.tableHeaderTextColor,
     tableRowBg:
-      normalizeHexColor(theme?.tableRowBg || "") || defaultThemeConfig.tableRowBg,
+      normalizeHexColor(theme?.tableRowBg || "") ||
+      defaultThemeConfig.tableRowBg,
     tableRowAltBg:
-      normalizeHexColor(theme?.tableRowAltBg || "") || defaultThemeConfig.tableRowAltBg,
+      normalizeHexColor(theme?.tableRowAltBg || "") ||
+      defaultThemeConfig.tableRowAltBg,
     tableRowHoverBg:
       normalizeHexColor(theme?.tableRowHoverBg || "") ||
       defaultThemeConfig.tableRowHoverBg,
@@ -309,11 +326,14 @@ export function sanitizeThemeConfig(
       normalizeHexColor(theme?.tableRowTextColor || "") ||
       defaultThemeConfig.tableRowTextColor,
     successColor:
-      normalizeHexColor(theme?.successColor || "") || defaultThemeConfig.successColor,
+      normalizeHexColor(theme?.successColor || "") ||
+      defaultThemeConfig.successColor,
     warningColor:
-      normalizeHexColor(theme?.warningColor || "") || defaultThemeConfig.warningColor,
+      normalizeHexColor(theme?.warningColor || "") ||
+      defaultThemeConfig.warningColor,
     dangerColor:
-      normalizeHexColor(theme?.dangerColor || "") || defaultThemeConfig.dangerColor,
+      normalizeHexColor(theme?.dangerColor || "") ||
+      defaultThemeConfig.dangerColor,
     infoColor:
       normalizeHexColor(theme?.infoColor || "") || defaultThemeConfig.infoColor,
     isDarkMode: Boolean(theme?.isDarkMode),
@@ -334,7 +354,10 @@ export function getStoredThemeConfig() {
 
 export function saveThemeConfig(theme: ThemeConfig) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(sanitizeThemeConfig(theme)));
+  window.localStorage.setItem(
+    THEME_STORAGE_KEY,
+    JSON.stringify(sanitizeThemeConfig(theme)),
+  );
 }
 
 function slugifyThemeTemplateValue(value: string) {
@@ -373,12 +396,12 @@ export function buildSystemThemeTemplates(): ThemeTemplateDefinition[] {
           theme: sanitizeThemeConfig(preset),
         },
       ];
-    })
+    }),
   );
 }
 
 function sanitizeThemeTemplateDefinition(
-  template: Partial<ThemeTemplateDefinition> | null | undefined
+  template: Partial<ThemeTemplateDefinition> | null | undefined,
 ): ThemeTemplateDefinition | null {
   const name = template?.name?.trim();
   const code = template?.code?.trim();
@@ -422,9 +445,11 @@ export function getThemeTemplateLibrary(): ThemeTemplateLibrary {
     const customTemplates = Array.isArray(parsed?.templates)
       ? parsed.templates
           .map((template) =>
-            sanitizeThemeTemplateDefinition({ ...template, source: "custom" })
+            sanitizeThemeTemplateDefinition({ ...template, source: "custom" }),
           )
-          .filter((template): template is ThemeTemplateDefinition => Boolean(template))
+          .filter((template): template is ThemeTemplateDefinition =>
+            Boolean(template),
+          )
       : [];
 
     const templates = [...systemTemplates, ...customTemplates];
@@ -467,37 +492,45 @@ export function saveThemeTemplateLibrary(library: ThemeTemplateLibrary) {
       version: 1,
       activeTemplateId: library.activeTemplateId,
       templates: customTemplates,
-    })
+    }),
   );
 }
 
 export function applyThemeConfig(
   themeInput: ThemeConfig,
-  target: HTMLElement = document.documentElement
+  target: HTMLElement = document.documentElement,
 ) {
   const theme = sanitizeThemeConfig(themeInput);
   const panelBorder = mixColors(
     theme.borderColor,
     theme.surfaceColor,
-    theme.isDarkMode ? 0.2 : 0.45
+    theme.isDarkMode ? 0.2 : 0.45,
   );
   const subtleSurface = mixColors(
     theme.surfaceColor,
     theme.secondaryColor,
-    theme.isDarkMode ? 0.12 : 0.035
+    theme.isDarkMode ? 0.12 : 0.035,
   );
   const hoverSurface = mixColors(
     theme.surfaceColor,
     theme.primaryColor,
-    theme.isDarkMode ? 0.18 : 0.075
+    theme.isDarkMode ? 0.18 : 0.075,
   );
-  const sidebarMuted = mixColors(theme.sidebarTextColor, theme.sidebarColor, 0.45);
+  const sidebarMuted = mixColors(
+    theme.sidebarTextColor,
+    theme.sidebarColor,
+    0.45,
+  );
   const foreground = getContrastingTextColor(theme.backgroundColor);
-  const mutedForeground = mixColors(theme.subtitleColor, theme.backgroundColor, 0.15);
+  const mutedForeground = mixColors(
+    theme.subtitleColor,
+    theme.backgroundColor,
+    0.15,
+  );
   const accentBg = mixColors(
     theme.surfaceColor,
     theme.primaryColor,
-    theme.isDarkMode ? 0.42 : 0.88
+    theme.isDarkMode ? 0.42 : 0.88,
   );
   const accentText = getContrastingTextColor(accentBg);
 
@@ -508,14 +541,24 @@ export function applyThemeConfig(
   target.style.setProperty("--muted-foreground", mutedForeground);
   target.style.setProperty("--border", panelBorder);
   target.style.setProperty("--card", theme.surfaceColor);
-  target.style.setProperty("--card-foreground", getContrastingTextColor(theme.surfaceColor));
+  target.style.setProperty(
+    "--card-foreground",
+    getContrastingTextColor(theme.surfaceColor),
+  );
   target.style.setProperty("--primary", theme.primaryColor);
-  target.style.setProperty("--primary-foreground", getContrastingTextColor(theme.primaryColor));
+  target.style.setProperty(
+    "--primary-foreground",
+    getContrastingTextColor(theme.primaryColor),
+  );
   target.style.setProperty("--accent", accentBg);
   target.style.setProperty("--accent-foreground", accentText);
   target.style.setProperty(
     "--app-primary-soft",
-    mixColors(theme.surfaceColor, theme.primaryColor, theme.isDarkMode ? 0.22 : 0.9)
+    mixColors(
+      theme.surfaceColor,
+      theme.primaryColor,
+      theme.isDarkMode ? 0.22 : 0.9,
+    ),
   );
   target.style.setProperty("--app-primary-strong", theme.primaryColor);
   target.style.setProperty("--app-accent-strong", theme.accentColor);
@@ -529,14 +572,17 @@ export function applyThemeConfig(
   target.style.setProperty("--app-sidebar-muted", sidebarMuted);
   target.style.setProperty(
     "--app-sidebar-border",
-    mixColors(theme.sidebarColor, "#FFFFFF", theme.isDarkMode ? 0.14 : 0.08)
+    mixColors(theme.sidebarColor, "#FFFFFF", theme.isDarkMode ? 0.14 : 0.08),
   );
   target.style.setProperty("--app-topbar-bg", theme.topbarColor);
   target.style.setProperty("--app-topbar-text", theme.topbarTextColor);
   target.style.setProperty("--app-title-color", theme.titleColor);
   target.style.setProperty("--app-title-muted", theme.subtitleColor);
   target.style.setProperty("--app-table-header-bg", theme.tableHeaderBg);
-  target.style.setProperty("--app-table-header-text", theme.tableHeaderTextColor);
+  target.style.setProperty(
+    "--app-table-header-text",
+    theme.tableHeaderTextColor,
+  );
   target.style.setProperty("--app-table-row-bg", theme.tableRowBg);
   target.style.setProperty("--app-table-row-alt-bg", theme.tableRowAltBg);
   target.style.setProperty("--app-table-row-hover-bg", theme.tableRowHoverBg);
@@ -544,21 +590,37 @@ export function applyThemeConfig(
   target.style.setProperty("--app-success", theme.successColor);
   target.style.setProperty(
     "--app-success-soft",
-    mixColors(theme.surfaceColor, theme.successColor, theme.isDarkMode ? 0.32 : 0.9)
+    mixColors(
+      theme.surfaceColor,
+      theme.successColor,
+      theme.isDarkMode ? 0.32 : 0.9,
+    ),
   );
   target.style.setProperty("--app-warning", theme.warningColor);
   target.style.setProperty(
     "--app-warning-soft",
-    mixColors(theme.surfaceColor, theme.warningColor, theme.isDarkMode ? 0.32 : 0.9)
+    mixColors(
+      theme.surfaceColor,
+      theme.warningColor,
+      theme.isDarkMode ? 0.32 : 0.9,
+    ),
   );
   target.style.setProperty("--app-danger", theme.dangerColor);
   target.style.setProperty(
     "--app-danger-soft",
-    mixColors(theme.surfaceColor, theme.dangerColor, theme.isDarkMode ? 0.32 : 0.9)
+    mixColors(
+      theme.surfaceColor,
+      theme.dangerColor,
+      theme.isDarkMode ? 0.32 : 0.9,
+    ),
   );
   target.style.setProperty("--app-info", theme.infoColor);
   target.style.setProperty(
     "--app-info-soft",
-    mixColors(theme.surfaceColor, theme.infoColor, theme.isDarkMode ? 0.32 : 0.9)
+    mixColors(
+      theme.surfaceColor,
+      theme.infoColor,
+      theme.isDarkMode ? 0.32 : 0.9,
+    ),
   );
 }

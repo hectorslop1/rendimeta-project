@@ -23,10 +23,30 @@ export function EmployeeScoreRing({
   bonusPoints,
 }: EmployeeScoreRingProps) {
   const segments: Segment[] = [
-    { label: "Ventas", value: salesPoints, color: "#e11d48", tailwindColor: "bg-rose-600" },
-    { label: "Asistencia", value: attendancePoints, color: "#2563eb", tailwindColor: "bg-blue-600" },
-    { label: "Racha", value: streakPoints, color: "#f59e0b", tailwindColor: "bg-amber-500" },
-    { label: "Bonos", value: bonusPoints, color: "#10b981", tailwindColor: "bg-emerald-500" },
+    {
+      label: "Ventas",
+      value: salesPoints,
+      color: "#6366f1",
+      tailwindColor: "bg-indigo-500",
+    },
+    {
+      label: "Asistencia",
+      value: attendancePoints,
+      color: "#2563eb",
+      tailwindColor: "bg-blue-600",
+    },
+    {
+      label: "Racha",
+      value: streakPoints,
+      color: "#f59e0b",
+      tailwindColor: "bg-amber-500",
+    },
+    {
+      label: "Bonos",
+      value: bonusPoints,
+      color: "#10b981",
+      tailwindColor: "bg-emerald-500",
+    },
   ];
 
   const size = 140;

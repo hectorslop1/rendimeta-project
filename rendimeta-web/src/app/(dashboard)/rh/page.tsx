@@ -22,7 +22,7 @@ import {
 const CLASSIFICATION_COLORS: Record<string, string> = {
   Premium: "#eab308",
   Productivo: "#22c55e",
-  "Transicion": "#f59e0b",
+  Transicion: "#f59e0b",
   "No Productivo": "#ef4444",
 };
 
@@ -35,7 +35,11 @@ export default function RhDashboardPage() {
         { name: "Premium", value: data.premiumCount, color: "#eab308" },
         { name: "Productivo", value: data.productiveCount, color: "#22c55e" },
         { name: "Transicion", value: data.transitionCount, color: "#f59e0b" },
-        { name: "No Productivo", value: data.nonProductiveCount, color: "#ef4444" },
+        {
+          name: "No Productivo",
+          value: data.nonProductiveCount,
+          color: "#ef4444",
+        },
       ]
     : [];
 
@@ -148,9 +152,13 @@ export default function RhDashboardPage() {
                   outerRadius={100}
                   paddingAngle={2}
                   dataKey="value"
-                  label={({ name, percent }: { name?: string; percent?: number }) =>
-                    `${name ?? ""} ${((percent ?? 0) * 100).toFixed(0)}%`
-                  }
+                  label={({
+                    name,
+                    percent,
+                  }: {
+                    name?: string;
+                    percent?: number;
+                  }) => `${name ?? ""} ${((percent ?? 0) * 100).toFixed(0)}%`}
                 >
                   {pieData.map((entry, idx) => (
                     <Cell key={idx} fill={entry.color} />
@@ -205,7 +213,7 @@ export default function RhDashboardPage() {
                     border: "1px solid #e5e7eb",
                   }}
                 />
-                <Bar dataKey="pct" fill="#e11d48" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="pct" fill="#6366f1" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
