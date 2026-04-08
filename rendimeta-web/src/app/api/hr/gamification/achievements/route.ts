@@ -2,16 +2,46 @@ import { prisma } from "@/lib/prisma";
 import { validateSession } from "@/lib/auth";
 import { jsonResponse, errorResponse } from "@/lib/api-helpers";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const user = await validateSession();
     if (!user) return errorResponse("No autenticado", 401);
+
+    const url = new URL(request.url);
+    const employeeId = url.searchParams.get("employeeId") || undefined;
 
     const achievements = await prisma.achievementDefinition.findMany({
       orderBy: { createdAt: "desc" },
     });
 
-    return jsonResponse(achievements);
+    if (!employeeId) {
+      return jsonResponse(achievements);
+    }
+
+    const employeeAchievements = await prisma.employeeAchievement.findMany({
+      where: { employeeId },
+      select: { achievementId: true, earnedAt: true },
+    });
+
+    const earnedByAchievementId = new Map(
+      employeeAchievements.map((ea) => [ea.achievementId, ea.earnedAt] as const)
+    );
+
+    const achievementsWithStatus = achievements.map((ach) => {
+      const earnedAt = earnedByAchievementId.get(ach.id);
+      return {
+        id: ach.id,
+        code: ach.code,
+        name: ach.name,
+        description: ach.description,
+        iconEmoji: ach.iconEmoji,
+        pointValue: ach.pointValue,
+        earned: !!earnedAt,
+        earnedAt: earnedAt?.toISOString(),
+      };
+    });
+
+    return jsonResponse(achievementsWithStatus);
   } catch {
     return errorResponse("Error interno del servidor", 500);
   }
