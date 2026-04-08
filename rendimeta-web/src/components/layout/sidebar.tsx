@@ -18,8 +18,8 @@ import { buildNavigationModel, isPathActive } from "@/lib/navigation";
 import { useAuth } from "@/providers/auth-provider";
 import { useAppShell } from "@/providers/app-shell-provider";
 
-const COLLAPSE_STORAGE_KEY = "gaslogistica.sidebarCollapsed";
-const SECTION_COLLAPSE_STORAGE_KEY = "gaslogistica.sectionCollapse";
+const COLLAPSE_STORAGE_KEY = "rendimeta.sidebarCollapsed";
+const SECTION_COLLAPSE_STORAGE_KEY = "rendimeta.sectionCollapse";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -281,7 +281,7 @@ export function Sidebar() {
                 <span className="hidden lg:inline">&copy;</span>
               ) : null}
               <span className={cn(collapsed && "lg:hidden")}>
-                Gas Logística &copy; {new Date().getFullYear()}
+                Rendimeta &copy; {new Date().getFullYear()}
               </span>
             </p>
           </div>

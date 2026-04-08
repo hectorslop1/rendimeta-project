@@ -10,14 +10,14 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  google_fonts: ^6.2.1
+  google_fonts: ^8.0.2
   provider: ^6.1.2
   shared_preferences: ^2.3.4
   flutter_animate: ^4.5.2
   percent_indicator: ^4.2.3
   workfire: ^1.0.2
   reward_popup: ^0.0.7
-  flutter_dotenv: ^5.2.1
+  flutter_dotenv: ^6.0.0
   flutter_webrtc: ^1.4.0
   http: ^1.5.0
   http_parser: ^4.1.2

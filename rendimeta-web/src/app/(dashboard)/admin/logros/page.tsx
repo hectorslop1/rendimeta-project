@@ -91,7 +91,7 @@ export default function AdminLogrosPage() {
       key: "category",
       label: "Categoria",
       render: (row: AchievementDefinitionRecord) => (
-        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+        <span className="inline-flex items-center rounded-full bg-[color:var(--app-table-row-alt-bg)] px-2.5 py-0.5 text-xs font-medium text-[color:var(--app-table-row-text)]">
           {getCategoryLabel(row.category)}
         </span>
       ),
@@ -107,12 +107,12 @@ export default function AdminLogrosPage() {
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+        <h1 className="text-2xl font-bold text-[color:var(--app-title-color)]">
           Bonos y Logros
         </h1>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700"
+          className="flex items-center gap-2 rounded-lg bg-[color:var(--app-primary-strong)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
           Nuevo Bono
@@ -145,7 +145,7 @@ export default function AdminLogrosPage() {
       >
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1 block text-sm font-medium text-[color:var(--app-table-header-text)]">
               Codigo
             </label>
             <input
@@ -153,11 +153,11 @@ export default function AdminLogrosPage() {
               type="text"
               required
               defaultValue={editRow?.code || ""}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              className="w-full rounded-lg border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-bg)] px-3 py-2 text-sm text-[color:var(--app-table-row-text)] outline-none focus:border-[color:var(--app-primary-strong)] focus:ring-2 focus:ring-[color:var(--app-primary-strong)]/20"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1 block text-sm font-medium text-[color:var(--app-table-header-text)]">
               Icono (emoji)
             </label>
             <input
@@ -165,12 +165,12 @@ export default function AdminLogrosPage() {
               type="text"
               defaultValue={editRow?.iconEmoji || ""}
               placeholder="Ej: *"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              className="w-full rounded-lg border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-bg)] px-3 py-2 text-sm text-[color:var(--app-table-row-text)] outline-none focus:border-[color:var(--app-primary-strong)] focus:ring-2 focus:ring-[color:var(--app-primary-strong)]/20"
             />
           </div>
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-1 block text-sm font-medium text-[color:var(--app-table-header-text)]">
             Nombre
           </label>
           <input
@@ -178,30 +178,30 @@ export default function AdminLogrosPage() {
             type="text"
             required
             defaultValue={editRow?.name || ""}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+            className="w-full rounded-lg border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-bg)] px-3 py-2 text-sm text-[color:var(--app-table-row-text)] outline-none focus:border-[color:var(--app-primary-strong)] focus:ring-2 focus:ring-[color:var(--app-primary-strong)]/20"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-1 block text-sm font-medium text-[color:var(--app-table-header-text)]">
             Descripcion
           </label>
           <textarea
             name="description"
             rows={2}
             defaultValue={editRow?.description || ""}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+            className="w-full rounded-lg border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-bg)] px-3 py-2 text-sm text-[color:var(--app-table-row-text)] outline-none focus:border-[color:var(--app-primary-strong)] focus:ring-2 focus:ring-[color:var(--app-primary-strong)]/20"
           />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1 block text-sm font-medium text-[color:var(--app-table-header-text)]">
               Categoria
             </label>
             <select
               name="category"
               required
               defaultValue={editRow?.category || ""}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              className="w-full rounded-lg border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-bg)] px-3 py-2 text-sm text-[color:var(--app-table-row-text)] outline-none focus:border-[color:var(--app-primary-strong)] focus:ring-2 focus:ring-[color:var(--app-primary-strong)]/20"
             >
               <option value="">Seleccionar...</option>
               {CATEGORY_OPTIONS.map((c) => (
@@ -212,7 +212,7 @@ export default function AdminLogrosPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1 block text-sm font-medium text-[color:var(--app-table-header-text)]">
               Puntos
             </label>
             <input
@@ -221,7 +221,7 @@ export default function AdminLogrosPage() {
               required
               min={0}
               defaultValue={editRow?.pointValue ?? ""}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              className="w-full rounded-lg border border-[color:var(--app-panel-border)] bg-[color:var(--app-panel-bg)] px-3 py-2 text-sm text-[color:var(--app-table-row-text)] outline-none focus:border-[color:var(--app-primary-strong)] focus:ring-2 focus:ring-[color:var(--app-primary-strong)]/20"
             />
           </div>
         </div>

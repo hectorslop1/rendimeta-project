@@ -10,7 +10,7 @@ import { ICON_MAP } from "@/lib/icon-map";
 import { useAuth } from "@/providers/auth-provider";
 import { useAppShell } from "@/providers/app-shell-provider";
 
-const HORIZONTAL_COLLAPSE_STORAGE_KEY = "gaslogistica.horizontalSectionCollapse";
+const HORIZONTAL_COLLAPSE_STORAGE_KEY = "rendimeta.horizontalSectionCollapse";
 
 export function ModuleTabs() {
   const pathname = usePathname();

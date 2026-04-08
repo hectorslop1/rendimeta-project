@@ -331,6 +331,19 @@ export function useAchievements() {
   });
 }
 
+export function useEmployeeAchievements(employeeId?: string) {
+  return useQuery({
+    queryKey: ["hr-employee-achievements", employeeId],
+    enabled: !!employeeId,
+    queryFn: async () => {
+      const res = await fetch(`/api/hr/gamification/achievements?employeeId=${employeeId}`);
+      if (!res.ok) throw new Error("Error loading employee achievements");
+      const data = await res.json();
+      return data.data || data;
+    },
+  });
+}
+
 export function useSystemConfig() {
   return useQuery<SystemConfigRecord>({
     queryKey: ["system-config"],
