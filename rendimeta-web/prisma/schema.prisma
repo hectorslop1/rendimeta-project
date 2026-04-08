@@ -1,0 +1,638 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// AUTENTICACION Y ROLES
+// ============================================================
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  level       Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users     User[]
+  employees Employee[]
+
+  @@map("roles")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  roleId       String
+  role         Role      @relation(fields: [roleId], references: [id])
+  employeeId   String?   @unique
+  employee     Employee? @relation(fields: [employeeId], references: [id])
+  stationIds   Json?
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessions Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+// ============================================================
+// ENTIDADES GEOGRAFICAS
+// ============================================================
+
+model State {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String   @unique
+  cities    City[]
+  createdAt DateTime @default(now())
+
+  @@map("states")
+}
+
+model City {
+  id        String    @id @default(cuid())
+  name      String
+  stateId   String
+  state     State     @relation(fields: [stateId], references: [id])
+  stations  Station[]
+  createdAt DateTime  @default(now())
+
+  @@unique([name, stateId])
+  @@map("cities")
+}
+
+model Station {
+  id                  String  @id @default(cuid())
+  name                String
+  address             String
+  neighborhood        String
+  postalCode          String
+  cityId              String
+  city                City    @relation(fields: [cityId], references: [id])
+  latitude            Float?
+  longitude           Float?
+  pumpCount           Int     @default(4)
+  tankCount           Int     @default(3)
+  tankCapacityLiters  Float   @default(40000)
+  hasConvenienceStore Boolean @default(true)
+  isActive            Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  operationalKpis   OperationalKpi[]
+  financialKpis     FinancialKpi[]
+  productivityKpis  ProductivityKpi[]
+  inventoryKpis     InventoryKpi[]
+  customerKpis      CustomerKpi[]
+  complianceKpis    ComplianceKpi[]
+  environmentalKpis EnvironmentalKpi[]
+
+  // HR relations
+  employees      Employee[]
+  saleRecords    SaleRecord[]
+  attendances    Attendance[]
+  quotaTemplates QuotaTemplate[]
+  hourlySummaries HourlySalesSummary[]
+
+  @@map("stations")
+}
+
+// ============================================================
+// TABLAS KPI - Granularidad diaria por estacion
+// ============================================================
+
+model OperationalKpi {
+  id                   String   @id @default(cuid())
+  stationId            String
+  station              Station  @relation(fields: [stationId], references: [id])
+  date                 DateTime @db.Date
+  fuelVolumeLiters     Float
+  regularLiters        Float
+  premiumLiters        Float
+  dieselLiters         Float
+  tankUtilizationPct   Float
+  pumpThroughput       Float
+  equipmentDowntimeMin Int
+  dispatchAccuracyPct  Float
+  createdAt            DateTime @default(now())
+
+  @@unique([stationId, date])
+  @@index([date])
+  @@index([stationId, date])
+  @@map("operational_kpis")
+}
+
+model FinancialKpi {
+  id                 String   @id @default(cuid())
+  stationId          String
+  station            Station  @relation(fields: [stationId], references: [id])
+  date               DateTime @db.Date
+  fuelGrossMarginPct Float
+  fuelGrossMarginMxn Float
+  storeMarginPct     Float
+  storeRevenueMxn    Float
+  ebitdaMxn          Float
+  totalRevenueMxn    Float
+  operatingCostsMxn  Float
+  operatingCostsPct  Float
+  createdAt          DateTime @default(now())
+
+  @@unique([stationId, date])
+  @@index([date])
+  @@index([stationId, date])
+  @@map("financial_kpis")
+}
+
+model ProductivityKpi {
+  id                  String   @id @default(cuid())
+  stationId           String
+  station             Station  @relation(fields: [stationId], references: [id])
+  date                DateTime @db.Date
+  salesPerLaborHour   Float
+  transactionsPerHour Float
+  pumpProductivity    Float
+  staffEfficiencyPct  Float
+  laborHours          Float
+  totalTransactions   Int
+  createdAt           DateTime @default(now())
+
+  @@unique([stationId, date])
+  @@index([date])
+  @@index([stationId, date])
+  @@map("productivity_kpis")
+}
+
+model InventoryKpi {
+  id                    String   @id @default(cuid())
+  stationId             String
+  station               Station  @relation(fields: [stationId], references: [id])
+  date                  DateTime @db.Date
+  inventoryTurnover     Float
+  shrinkagePct          Float
+  shrinkageLiters       Float
+  daysOfInventory       Float
+  deliveryEfficiencyPct Float
+  inventoryAccuracyPct  Float
+  createdAt             DateTime @default(now())
+
+  @@unique([stationId, date])
+  @@index([date])
+  @@index([stationId, date])
+  @@map("inventory_kpis")
+}
+
+model CustomerKpi {
+  id                      String   @id @default(cuid())
+  stationId               String
+  station                 Station  @relation(fields: [stationId], references: [id])
+  date                    DateTime @db.Date
+  customerTraffic         Int
+  averageTicketMxn        Float
+  storeConversionPct      Float
+  npsScore                Float
+  loyaltyParticipationPct Float
+  createdAt               DateTime @default(now())
+
+  @@unique([stationId, date])
+  @@index([date])
+  @@index([stationId, date])
+  @@map("customer_kpis")
+}
+
+model ComplianceKpi {
+  id                       String   @id @default(cuid())
+  stationId                String
+  station                  Station  @relation(fields: [stationId], references: [id])
+  date                     DateTime @db.Date
+  regulatoryCompliancePct  Float
+  safetyIncidents          Int
+  tankLeakTestsPassed      Int
+  tankLeakTestsTotal       Int
+  preventiveMaintenancePct Float
+  pendingMaintenanceTasks  Int
+  createdAt                DateTime @default(now())
+
+  @@unique([stationId, date])
+  @@index([date])
+  @@index([stationId, date])
+  @@map("compliance_kpis")
+}
+
+model EnvironmentalKpi {
+  id                   String   @id @default(cuid())
+  stationId            String
+  station              Station  @relation(fields: [stationId], references: [id])
+  date                 DateTime @db.Date
+  vocEmissionsKg       Float
+  waterContentPct      Float
+  energyConsumptionKwh Float
+  createdAt            DateTime @default(now())
+
+  @@unique([stationId, date])
+  @@index([date])
+  @@index([stationId, date])
+  @@map("environmental_kpis")
+}
+
+// ============================================================
+// HR - CONFIGURACION DEL SISTEMA
+// ============================================================
+
+model SystemConfig {
+  id                 String @id @default(cuid())
+  companyName        String @default("Mi Gasolinera")
+  companyShortName   String @default("MG")
+  brandColor         String @default("#e11d48")
+  logoUrl            String?
+  timezone           String @default("America/Mexico_City")
+  currency           String @default("MXN")
+  operatingHoursStart Int   @default(6)
+  operatingHoursEnd   Int   @default(22)
+
+  @@map("system_config")
+}
+
+// ============================================================
+// HR - TURNOS Y EMPLEADOS
+// ============================================================
+
+model Shift {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  startHour Int
+  endHour   Int
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employees   Employee[]
+  attendances Attendance[]
+
+  @@map("shifts")
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+model Employee {
+  id              String         @id @default(cuid())
+  employeeNumber  String         @unique
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  roleId          String
+  role            Role           @relation(fields: [roleId], references: [id])
+  shiftId         String
+  shift           Shift          @relation(fields: [shiftId], references: [id])
+  stationId       String
+  station         Station        @relation(fields: [stationId], references: [id])
+  hireDate        DateTime       @db.Date
+  terminationDate DateTime?      @db.Date
+  status          EmployeeStatus @default(ACTIVE)
+  avatarUrl       String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user               User?
+  salesRecords       SaleRecord[]
+  attendances        Attendance[]
+  quotaAssignments   QuotaAssignment[]
+  commissionPayments CommissionPayment[]
+  evaluations        PerformanceEvaluation[]
+  achievements       EmployeeAchievement[]
+  gamificationScores GamificationScore[]
+  hourlySummaries    HourlySalesSummary[]
+
+  @@index([stationId])
+  @@index([roleId])
+  @@map("employees")
+}
+
+// ============================================================
+// HR - PRODUCTOS Y CATEGORIAS
+// ============================================================
+
+model ProductCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String   @unique
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products        Product[]
+  quotaTemplates  QuotaTemplate[]
+  commissionRules CommissionRule[]
+
+  @@map("product_categories")
+}
+
+model Product {
+  id         String          @id @default(cuid())
+  sku        String          @unique
+  name       String
+  categoryId String
+  category   ProductCategory @relation(fields: [categoryId], references: [id])
+  unitPrice  Float
+  costPrice  Float           @default(0)
+  unit       String          @default("pieza")
+  isActive   Boolean         @default(true)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  saleRecords SaleRecord[]
+
+  @@index([categoryId])
+  @@map("products")
+}
+
+// ============================================================
+// HR - CUOTAS
+// ============================================================
+
+model QuotaTemplate {
+  id            String           @id @default(cuid())
+  name          String
+  categoryId    String
+  category      ProductCategory  @relation(fields: [categoryId], references: [id])
+  stationId     String?
+  station       Station?         @relation(fields: [stationId], references: [id])
+  roleId        String?
+  monthlyTarget Float
+  isRevenue     Boolean          @default(false)
+  isActive      Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  assignments QuotaAssignment[]
+
+  @@index([categoryId])
+  @@map("quota_templates")
+}
+
+model QuotaAssignment {
+  id           String         @id @default(cuid())
+  employeeId   String
+  employee     Employee       @relation(fields: [employeeId], references: [id])
+  templateId   String?
+  template     QuotaTemplate? @relation(fields: [templateId], references: [id])
+  month        DateTime       @db.Date
+  dailyTarget  Float
+  monthlyTarget Float
+  categoryName String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([employeeId, month, categoryName])
+  @@index([employeeId])
+  @@map("quota_assignments")
+}
+
+// ============================================================
+// HR - VENTAS
+// ============================================================
+
+model SaleRecord {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id])
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  stationId   String
+  station     Station  @relation(fields: [stationId], references: [id])
+  date        DateTime @db.Date
+  hour        Int
+  quantity    Float
+  unitPrice   Float
+  totalAmount Float
+  createdAt   DateTime @default(now())
+
+  @@index([employeeId, date])
+  @@index([stationId, date])
+  @@index([date, hour])
+  @@map("sale_records")
+}
+
+model HourlySalesSummary {
+  id                  String   @id @default(cuid())
+  employeeId          String
+  employee            Employee @relation(fields: [employeeId], references: [id])
+  stationId           String
+  station             Station  @relation(fields: [stationId], references: [id])
+  date                DateTime @db.Date
+  hour                Int
+  totalUnits          Float    @default(0)
+  totalRevenue        Float    @default(0)
+  categoryBreakdown   Json?
+  quotaTarget         Float    @default(0)
+  fulfillmentPct      Float    @default(0)
+  createdAt           DateTime @default(now())
+
+  @@unique([employeeId, date, hour])
+  @@index([stationId, date])
+  @@map("hourly_sales_summaries")
+}
+
+// ============================================================
+// HR - ASISTENCIA
+// ============================================================
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EARLY_LEAVE
+  DAY_OFF
+  VACATION
+  SICK_LEAVE
+}
+
+model Attendance {
+  id          String           @id @default(cuid())
+  employeeId  String
+  employee    Employee         @relation(fields: [employeeId], references: [id])
+  stationId   String
+  station     Station          @relation(fields: [stationId], references: [id])
+  shiftId     String
+  shift       Shift            @relation(fields: [shiftId], references: [id])
+  date        DateTime         @db.Date
+  clockIn     DateTime?
+  clockOut    DateTime?
+  hoursWorked Float?
+  status      AttendanceStatus @default(PRESENT)
+  notes       String?
+  createdAt   DateTime         @default(now())
+
+  @@unique([employeeId, date])
+  @@index([stationId, date])
+  @@map("attendances")
+}
+
+// ============================================================
+// HR - COMISIONES
+// ============================================================
+
+model CommissionRule {
+  id              String          @id @default(cuid())
+  name            String
+  categoryId      String
+  category        ProductCategory @relation(fields: [categoryId], references: [id])
+  tierMinPct      Float
+  tierMaxPct      Float?
+  commissionPct   Float
+  commissionFixed Float?
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([categoryId])
+  @@map("commission_rules")
+}
+
+enum CommissionStatus {
+  CALCULATED
+  APPROVED
+  PAID
+}
+
+model CommissionPayment {
+  id              String           @id @default(cuid())
+  employeeId      String
+  employee        Employee         @relation(fields: [employeeId], references: [id])
+  month           DateTime         @db.Date
+  categoryName    String
+  salesAmount     Float
+  quotaAmount     Float
+  fulfillmentPct  Float
+  commissionRate  Float
+  commissionAmount Float
+  status          CommissionStatus @default(CALCULATED)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([employeeId, month, categoryName])
+  @@index([employeeId])
+  @@map("commission_payments")
+}
+
+// ============================================================
+// HR - EVALUACIONES DE DESEMPENO
+// ============================================================
+
+enum PerformanceClass {
+  PREMIUM
+  PRODUCTIVE
+  TRANSITION
+  NON_PRODUCTIVE
+}
+
+model PerformanceEvaluation {
+  id                     String           @id @default(cuid())
+  employeeId             String
+  employee               Employee         @relation(fields: [employeeId], references: [id])
+  evaluationMonth        DateTime         @db.Date
+  overallFulfillmentPct  Float
+  classification         PerformanceClass
+  fuelSalesAmount        Float            @default(0)
+  peripheralSalesAmount  Float            @default(0)
+  attendanceScore        Float            @default(100)
+  notes                  String?
+  evaluatedBy            String?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  @@unique([employeeId, evaluationMonth])
+  @@index([employeeId])
+  @@map("performance_evaluations")
+}
+
+// ============================================================
+// HR - GAMIFICACION
+// ============================================================
+
+model AchievementDefinition {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String
+  iconEmoji   String   @default("🏆")
+  category    String   @default("sales")
+  pointValue  Int      @default(10)
+  condition   Json
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  employeeAchievements EmployeeAchievement[]
+
+  @@map("achievement_definitions")
+}
+
+model EmployeeAchievement {
+  id            String                @id @default(cuid())
+  employeeId    String
+  employee      Employee              @relation(fields: [employeeId], references: [id])
+  achievementId String
+  achievement   AchievementDefinition @relation(fields: [achievementId], references: [id])
+  earnedAt      DateTime              @default(now())
+  metadata      Json?
+
+  @@unique([employeeId, achievementId])
+  @@index([employeeId])
+  @@map("employee_achievements")
+}
+
+model GamificationScore {
+  id               String   @id @default(cuid())
+  employeeId       String
+  employee         Employee @relation(fields: [employeeId], references: [id])
+  month            DateTime @db.Date
+  totalPoints      Int      @default(0)
+  salesPoints      Int      @default(0)
+  attendancePoints Int      @default(0)
+  streakPoints     Int      @default(0)
+  bonusPoints      Int      @default(0)
+  currentStreak    Int      @default(0)
+  bestStreak       Int      @default(0)
+  rank             Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([employeeId, month])
+  @@index([employeeId])
+  @@map("gamification_scores")
+}

@@ -1,0 +1,63 @@
+{
+  "name": "rendimeta-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo del proyecto Rendimeta - App móvil y web",
+  "scripts": {
+    "install:all": "./scripts/install-all.sh",
+    "dev:all": "./scripts/dev-all.sh",
+    "clean:all": "./scripts/clean-all.sh",
+    "test:all": "./scripts/test-all.sh",
+    "dev:mobile": "cd rendimeta-mobile && flutter run",
+    "dev:web": "cd rendimeta-web && npm run dev",
+    "build:mobile:android": "cd rendimeta-mobile && flutter build apk --release",
+    "build:mobile:ios": "cd rendimeta-mobile && flutter build ios --release",
+    "build:web": "cd rendimeta-web && npm run build",
+    "test:mobile": "cd rendimeta-mobile && flutter test",
+    "test:web": "cd rendimeta-web && npm run lint && npm run e2e",
+    "lint:mobile": "cd rendimeta-mobile && flutter analyze",
+    "lint:web": "cd rendimeta-web && npm run lint",
+    "format:mobile": "cd rendimeta-mobile && dart format .",
+    "prisma:studio": "cd rendimeta-web && npx prisma studio",
+    "prisma:migrate": "cd rendimeta-web && npx prisma migrate dev",
+    "prisma:generate": "cd rendimeta-web && npx prisma generate",
+    "prisma:seed": "cd rendimeta-web && npx prisma db seed"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hectorslop1/redimeta-project.git"
+  },
+  "keywords": [
+    "monorepo",
+    "flutter",
+    "nextjs",
+    "react",
+    "typescript",
+    "dart",
+    "productivity"
+  ],
+  "author": {
+    "name": "Rendimeta Team",
+    "email": "contact@rendimeta.com"
+  },
+  "contributors": [
+    {
+      "name": "Hector Lopez",
+      "email": "hectorslop1@github.com",
+      "url": "https://github.com/hectorslop1"
+    },
+    {
+      "name": "CB Luna",
+      "email": "CB-Luna@github.com",
+      "url": "https://github.com/CB-Luna"
+    }
+  ],
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "workspaces": [
+    "rendimeta-web"
+  ]
+}

@@ -1,0 +1,235 @@
+name: CI - Rendimeta Monorepo
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ============================================
+  # JOB: Detectar cambios
+  # ============================================
+  changes:
+    name: Detectar cambios
+    runs-on: ubuntu-latest
+    outputs:
+      mobile: ${{ steps.filter.outputs.mobile }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            mobile:
+              - 'rendimeta-mobile/**'
+            web:
+              - 'rendimeta-web/**'
+
+  # ============================================
+  # JOB: Tests Flutter (Mobile)
+  # ============================================
+  test-mobile:
+    name: Tests Flutter
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.11.0'
+          channel: 'stable'
+      
+      - name: Verificar versión Flutter
+        run: flutter --version
+      
+      - name: Instalar dependencias
+        working-directory: ./rendimeta-mobile
+        run: flutter pub get
+      
+      - name: Analizar código
+        working-directory: ./rendimeta-mobile
+        run: flutter analyze
+      
+      - name: Ejecutar tests
+        working-directory: ./rendimeta-mobile
+        run: flutter test
+      
+      - name: Verificar formato
+        working-directory: ./rendimeta-mobile
+        run: dart format --set-exit-if-changed .
+
+  # ============================================
+  # JOB: Build Flutter Android
+  # ============================================
+  build-mobile-android:
+    name: Build Android
+    needs: [changes, test-mobile]
+    if: needs.changes.outputs.mobile == 'true' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.11.0'
+          channel: 'stable'
+      
+      - name: Instalar dependencias
+        working-directory: ./rendimeta-mobile
+        run: flutter pub get
+      
+      - name: Build APK
+        working-directory: ./rendimeta-mobile
+        run: flutter build apk --release
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: rendimeta-mobile/build/app/outputs/flutter-apk/app-release.apk
+
+  # ============================================
+  # JOB: Tests Next.js (Web)
+  # ============================================
+  test-web:
+    name: Tests Next.js
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: rendimeta-web/package-lock.json
+      
+      - name: Instalar dependencias
+        working-directory: ./rendimeta-web
+        run: npm ci
+      
+      - name: Generar Prisma Client
+        working-directory: ./rendimeta-web
+        run: npx prisma generate
+      
+      - name: Lint
+        working-directory: ./rendimeta-web
+        run: npm run lint
+      
+      - name: Build
+        working-directory: ./rendimeta-web
+        run: npm run build
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/test"
+
+  # ============================================
+  # JOB: Tests E2E (Web)
+  # ============================================
+  test-e2e:
+    name: Tests E2E
+    needs: [changes, test-web]
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: rendimeta-web/package-lock.json
+      
+      - name: Instalar dependencias
+        working-directory: ./rendimeta-web
+        run: npm ci
+      
+      - name: Generar Prisma Client
+        working-directory: ./rendimeta-web
+        run: npx prisma generate
+      
+      - name: Ejecutar migraciones
+        working-directory: ./rendimeta-web
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/test"
+      
+      - name: Instalar Playwright
+        working-directory: ./rendimeta-web
+        run: npx playwright install --with-deps
+      
+      - name: Ejecutar tests E2E
+        working-directory: ./rendimeta-web
+        run: npm run e2e
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/test"
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: rendimeta-web/playwright-report/
+          retention-days: 30
+
+  # ============================================
+  # JOB: Security Scan
+  # ============================================
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
