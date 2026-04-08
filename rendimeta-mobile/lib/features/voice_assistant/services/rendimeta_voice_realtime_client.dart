@@ -69,6 +69,9 @@ class RendimetaVoiceRealtimeClient {
   final StreamController<RendimetaVoiceRealtimeEvent> _eventsController =
       StreamController<RendimetaVoiceRealtimeEvent>.broadcast();
 
+  RendimetaAssistantSnapshot? _sessionSnapshot;
+  String? _vehicleContext;
+
   RTCPeerConnection? _peerConnection;
   RTCDataChannel? _dataChannel;
   MediaStream? _localStream;
@@ -96,9 +99,17 @@ class RendimetaVoiceRealtimeClient {
       throw StateError('Falta configurar OPENAI_API_KEY para voz realtime.');
     }
 
+    debugPrint(
+      'RendimetaVoiceRealtimeClient.connect model=${OpenAiVoiceConfig.realtimeModel} '
+      'apiKeyCargada=${OpenAiVoiceConfig.apiKey.isNotEmpty}',
+    );
+
     _isDisposed = false;
     await _ensureRendererInitialized();
     await _cleanup();
+
+    _sessionSnapshot = snapshot;
+    _vehicleContext = null;
 
     _emit(
       const RendimetaVoiceRealtimeEvent(
@@ -198,27 +209,6 @@ class RendimetaVoiceRealtimeClient {
     required String sdp,
     required RendimetaAssistantSnapshot snapshot,
   }) async {
-    final sessionPayload = jsonEncode({
-      'type': 'realtime',
-      'model': OpenAiVoiceConfig.realtimeModel,
-      'instructions': _buildInstructions(snapshot),
-      'output_modalities': ['audio'],
-      'max_output_tokens': 320,
-      'audio': {
-        'input': {
-          'transcription': {'model': OpenAiVoiceConfig.transcriptionModel},
-          'turn_detection': {
-            'type': 'server_vad',
-            'create_response': false,
-            'interrupt_response': false,
-            'silence_duration_ms': 1200,
-            'prefix_padding_ms': 500,
-            'idle_timeout_ms': 12000,
-          },
-        },
-        'output': {'voice': OpenAiVoiceConfig.voice},
-      },
-    });
     final candidateAttempts = <({String model, bool typedParts})>[
       (model: OpenAiVoiceConfig.realtimeModel, typedParts: false),
       (model: OpenAiVoiceConfig.realtimeModel, typedParts: true),
@@ -228,31 +218,64 @@ class RendimetaVoiceRealtimeClient {
     final triedAttempts = <String>{};
     RealtimeVoiceCallException? lastError;
 
-    for (final attempt in candidateAttempts) {
-      final id = '${attempt.model}:${attempt.typedParts ? 'typed' : 'plain'}';
-      if (!triedAttempts.add(id)) {
-        continue;
-      }
+    for (final includeTools in const <bool>[true, false]) {
+      final sessionPayloadBase = jsonEncode({
+        'type': 'realtime',
+        'model': OpenAiVoiceConfig.realtimeModel,
+        'instructions': _buildInstructions(snapshot),
+        if (includeTools)
+          'tools': [
+            {'type': 'web_search'},
+          ],
+        'output_modalities': ['audio'],
+        'max_output_tokens': 320,
+        'audio': {
+          'input': {
+            'transcription': {'model': OpenAiVoiceConfig.transcriptionModel},
+            'turn_detection': {
+              'type': 'server_vad',
+              'create_response': false,
+              'interrupt_response': false,
+              'silence_duration_ms': 1200,
+              'prefix_padding_ms': 500,
+              'idle_timeout_ms': 12000,
+            },
+          },
+          'output': {'voice': OpenAiVoiceConfig.voice},
+        },
+      });
 
-      try {
-        return await _createVoiceCallAttempt(
-          sdp: sdp,
-          sessionPayload: sessionPayload.replaceFirst(
-            OpenAiVoiceConfig.realtimeModel,
-            attempt.model,
-          ),
-          model: attempt.model,
-          typedParts: attempt.typedParts,
-        );
-      } on RealtimeVoiceCallException catch (error) {
-        lastError = error;
-        if (_shouldRetry(error, typedParts: attempt.typedParts)) {
-          debugPrint(
-            'OpenAI Realtime falló con modelo=${attempt.model} variante=${attempt.typedParts ? 'typed' : 'plain'}. Reintentando.',
-          );
+      for (final attempt in candidateAttempts) {
+        final id =
+            '${attempt.model}:${attempt.typedParts ? 'typed' : 'plain'}:${includeTools ? 'tools' : 'noTools'}';
+        if (!triedAttempts.add(id)) {
           continue;
         }
-        rethrow;
+
+        try {
+          return await _createVoiceCallAttempt(
+            sdp: sdp,
+            sessionPayload: sessionPayloadBase.replaceFirst(
+              OpenAiVoiceConfig.realtimeModel,
+              attempt.model,
+            ),
+            model: attempt.model,
+            typedParts: attempt.typedParts,
+          );
+        } on RealtimeVoiceCallException catch (error) {
+          lastError = error;
+          if (_shouldRetry(error, typedParts: attempt.typedParts)) {
+            debugPrint(
+              'OpenAI Realtime falló con modelo=${attempt.model} variante=${attempt.typedParts ? 'typed' : 'plain'} tools=${includeTools ? 'on' : 'off'}. Reintentando.',
+            );
+            continue;
+          }
+          if (includeTools) {
+            // Si falla por compatibilidad con herramientas, intentaremos sin herramientas.
+            continue;
+          }
+          rethrow;
+        }
       }
     }
 
@@ -458,20 +481,24 @@ class RendimetaVoiceRealtimeClient {
     return '''
 Eres RendiCoach, el coach de voz de Rendimeta para vendedoras y vendedores de la gasolinera Rendichicas.
 
-Reglas obligatorias:
-- Habla siempre en español mexicano natural.
-- Responde con tono cercano, claro y útil.
-- Mantén las respuestas muy cortas: máximo 1 o 2 frases.
-- Si el usuario solo dice "hola", "hey" o "tengo una duda", responde con un saludo breve y pregunta en qué le ayudas. No des un resumen largo.
-- Solo usa la información del contexto actual de la app. No inventes ventas, metas ni métricas.
-- Si algo no está en el contexto, dilo claramente y ofrece ayuda con lo que sí aparece en la app.
-- Puedes responder sobre metas, ventas de hoy, ranking, XP, racha, tickets pendientes y recomendaciones de venta.
-- No menciones modelos, API keys ni configuraciones técnicas.
-- Tu voz debe sonar cálida, natural y segura.
+	Reglas obligatorias:
+	- Habla siempre en español mexicano natural.
+	- Responde con tono cercano, claro y útil.
+	- Mantén las respuestas muy cortas: máximo 1 o 2 frases.
+	- Si el usuario solo dice "hola", "hey" o "tengo una duda", responde con un saludo breve y pregunta en qué le ayudas. No des un resumen largo.
+	- Usa el contexto de la app para métricas (ventas, metas, ranking, XP, racha). No inventes números.
+	- Para dudas del trabajo diario (llantas, aceite, capacidad de tanque, etc.), sí puedes usar conocimiento general.
+	- Si el usuario pide un dato exacto para un vehículo específico y no estás 100% seguro, consulta una referencia confiable antes de dar un número.
+	- Mantén el contexto conversacional: si el usuario ya mencionó un vehículo (marca/modelo/año), úsalo en las siguientes preguntas sin pedirlo de nuevo.
+	- Si te faltan datos para ser preciso (motor, versión, medida de llanta, país), haz 1 pregunta corta para aclarar y sugiere verificar etiqueta de puerta/manual cuando aplique.
+	- Puedes responder sobre metas, ventas de hoy, ranking, XP, racha, tickets pendientes y recomendaciones de venta.
+	- No menciones modelos, API keys ni configuraciones técnicas.
+	- Tu voz debe sonar cálida, natural y segura.
 
 Contexto actual del vendedor:
 - Nombre: ${snapshot.profile.name}
 - Estación: ${snapshot.profile.station}
+- Vehículo en contexto: ${_vehicleContext ?? 'No especificado'}
 - Ventas de hoy: $sales
 - Ventas totales hoy: ${snapshot.profile.todayTotalSales}
 - XP actual: ${snapshot.profile.xp}
@@ -483,6 +510,74 @@ Contexto actual del vendedor:
 ${feedback == null || feedback.isEmpty ? '' : '- Feedback reciente: $feedback'}
 ${alert == null || alert.isEmpty ? '' : '- Alerta actual: $alert'}
 ''';
+  }
+
+  void _maybeUpdateVehicleContext(String transcript) {
+    final extracted = _extractVehicleContext(transcript);
+    if (extracted == null || extracted.isEmpty) return;
+    if (extracted == _vehicleContext) return;
+    _vehicleContext = extracted;
+    _pushSessionInstructionsUpdate();
+  }
+
+  String? _extractVehicleContext(String transcript) {
+    final text = transcript.trim();
+    if (text.isEmpty) return null;
+
+    final withBrand = RegExp(
+      r'\b(toyota|honda|nissan|mazda|ford|chevrolet|vw|volkswagen|kia|hyundai|bmw|mercedes|audi|jeep|ram|gmc|subaru|mitsubishi)\s+([a-z0-9]+(?:\s+[a-z0-9]+){0,2})\s+(20\d{2}|19\d{2})\b',
+      caseSensitive: false,
+    );
+    final match = withBrand.firstMatch(text);
+    if (match != null) {
+      final brand = match.group(1) ?? '';
+      final model = match.group(2) ?? '';
+      final year = match.group(3) ?? '';
+      final normalizedBrand = brand.toLowerCase() == 'vw'
+          ? 'Volkswagen'
+          : _titleCase(brand);
+      return '$normalizedBrand ${_titleCase(model)} $year'.trim();
+    }
+
+    final modelYear = RegExp(
+      r'\b([a-z][a-z0-9]+(?:\s+[a-z][a-z0-9]+){0,2})\s+(20\d{2}|19\d{2})\b',
+      caseSensitive: false,
+    );
+    final modelMatch = modelYear.firstMatch(text);
+    if (modelMatch == null) return null;
+    final model = modelMatch.group(1) ?? '';
+    final year = modelMatch.group(2) ?? '';
+    return '${_titleCase(model)} $year'.trim();
+  }
+
+  String _titleCase(String value) {
+    final parts = value
+        .split(RegExp(r'\s+'))
+        .where((p) => p.trim().isNotEmpty)
+        .toList();
+    return parts
+        .map(
+          (p) => p.length <= 1
+              ? p.toUpperCase()
+              : '${p[0].toUpperCase()}${p.substring(1).toLowerCase()}',
+        )
+        .join(' ');
+  }
+
+  void _pushSessionInstructionsUpdate() {
+    final channel = _dataChannel;
+    final snapshot = _sessionSnapshot;
+    if (channel == null || snapshot == null) return;
+    try {
+      channel.send(
+        RTCDataChannelMessage(
+          jsonEncode({
+            'type': 'session.update',
+            'session': {'instructions': _buildInstructions(snapshot)},
+          }),
+        ),
+      );
+    } catch (_) {}
   }
 
   Future<void> setMicEnabled(bool enabled) async {
@@ -550,6 +645,8 @@ ${alert == null || alert.isEmpty ? '' : '- Alerta actual: $alert'}
     _lastRemoteLevel = 0;
     _activeUserItemId = null;
     _requestedResponseItemIds.clear();
+    _sessionSnapshot = null;
+    _vehicleContext = null;
     try {
       await Helper.setSpeakerphoneOn(false);
     } catch (_) {}
@@ -700,6 +797,7 @@ ${alert == null || alert.isEmpty ? '' : '- Alerta actual: $alert'}
           _activeUserItemId = null;
           break;
         }
+        _maybeUpdateVehicleContext(transcript);
         _emit(
           RendimetaVoiceRealtimeEvent(
             type: RendimetaVoiceRealtimeEventType.transcriptFinal,

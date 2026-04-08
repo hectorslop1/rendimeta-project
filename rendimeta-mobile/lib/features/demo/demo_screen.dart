@@ -61,6 +61,7 @@ class _DemoScreenState extends State<DemoScreen> {
         description: 'Creado desde la app móvil',
         userId: user?.id,
       );
+      if (!mounted) return;
       _titleController.clear();
       FocusScope.of(context).unfocus();
     } catch (e) {
@@ -87,21 +88,14 @@ class _DemoScreenState extends State<DemoScreen> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -126,10 +120,7 @@ class _DemoScreenState extends State<DemoScreen> {
               children: [
                 const Text(
                   'Los cambios se sincronizan automáticamente',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 14),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -199,10 +190,7 @@ class _DemoScreenState extends State<DemoScreen> {
                     child: Text(
                       'No hay items.\nCrea uno para empezar.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: Colors.grey, fontSize: 16),
                     ),
                   )
                 : ListView.builder(
@@ -251,8 +239,8 @@ class _DemoScreenState extends State<DemoScreen> {
                                       color: isCompleted
                                           ? Colors.green[100]
                                           : item.status == 'active'
-                                              ? Colors.blue[100]
-                                              : Colors.grey[200],
+                                          ? Colors.blue[100]
+                                          : Colors.grey[200],
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -263,8 +251,8 @@ class _DemoScreenState extends State<DemoScreen> {
                                         color: isCompleted
                                             ? Colors.green[700]
                                             : item.status == 'active'
-                                                ? Colors.blue[700]
-                                                : Colors.grey[700],
+                                            ? Colors.blue[700]
+                                            : Colors.grey[700],
                                       ),
                                     ),
                                   ),
@@ -332,10 +320,7 @@ class _DemoScreenState extends State<DemoScreen> {
                   '✅ Completa un item en web y míralo aquí\n'
                   '✅ Elimina un item desde cualquier app\n'
                   '✅ Todo se sincroniza en tiempo real',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 12),
                 ),
               ],
             ),

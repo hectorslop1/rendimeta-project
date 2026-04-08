@@ -17,9 +17,7 @@ class SyncIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
-      child: isSyncing
-          ? _buildSyncing()
-          : _buildOnline(),
+      child: isSyncing ? _buildSyncing() : _buildOnline(),
     );
   }
 
@@ -30,9 +28,7 @@ class SyncIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.warning.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.warning.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -66,9 +62,7 @@ class SyncIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.success.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.success.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

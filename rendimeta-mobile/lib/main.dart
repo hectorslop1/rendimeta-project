@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'core/config/app_env.dart';
 import 'core/game_state.dart';
 import 'core/theme_notifier.dart';
 import 'theme/app_theme.dart';
@@ -12,9 +13,16 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await dotenv.load(fileName: '.env');
-  } catch (_) {}
+    AppEnv.logSummary();
+  } catch (error) {
+    debugPrint('No se pudo cargar rendimeta-mobile/.env: $error');
+  }
 
-  await SupabaseClientService.initialize();
+  try {
+    await SupabaseClientService.initialize();
+  } catch (error) {
+    debugPrint('No se pudo inicializar Supabase: $error');
+  }
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const RendimetaApp());

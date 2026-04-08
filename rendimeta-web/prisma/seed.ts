@@ -302,6 +302,7 @@ async function main() {
     { name: "Gerente de Estación", description: "Gestión de una estación", level: 2 },
     { name: "Encargado de Turno", description: "Supervisión de turno", level: 1 },
     { name: "Despachador", description: "Empleado operativo de bombas", level: 0 },
+    { name: "Vendedor", description: "Despachador / vendedor de estación", level: 0 },
     { name: "Cajero", description: "Empleado operativo de caja", level: 0 },
   ];
 

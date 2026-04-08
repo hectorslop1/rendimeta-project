@@ -1,13 +1,45 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart' hide Badge;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/haptics.dart';
-import '../core/models.dart';
-import '../core/ticket_model.dart';
-import '../mock_data/mock_data.dart';
+
+import '../services/api_service.dart';
+import 'haptics.dart';
+import 'models.dart';
+import 'ticket_model.dart';
 
 class GameState extends ChangeNotifier {
-  late UserProfile _profile;
-  List<TrainingVideo> _videos = [];
+  GameState() {
+    unawaited(_bootstrap());
+  }
+
+  static const List<String> _motivationalPhrases = [
+    'Cada venta cuenta, sigue asi',
+    'Hoy es un gran dia para superar tu meta',
+    'Tu esfuerzo se nota en los numeros',
+    'Vas por buen camino',
+    'La constancia te lleva lejos',
+  ];
+
+  UserProfile _profile = const UserProfile(
+    name: 'Cargando',
+    station: 'Sin estación',
+    xp: 0,
+    streak: 0,
+    totalSales: 0,
+    todaySales: <ProductType, int>{
+      ProductType.aceite: 0,
+      ProductType.snack: 0,
+      ProductType.accesorio: 0,
+      ProductType.aromatizante: 0,
+    },
+    badges: <Badge>[],
+    missions: <DailyMission>[],
+    salesHistory: <SaleRecord>[],
+  );
+  List<TrainingVideo> _videos = const <TrainingVideo>[];
+  List<RankingEntry> _ranking = const <RankingEntry>[];
+  List<double> _weeklyTrend = List<double>.filled(7, 0);
   String? _lastFeedback;
   bool _showCelebration = false;
   String _celebrationMessage = '';
@@ -18,19 +50,14 @@ class GameState extends ChangeNotifier {
   bool _showValidationAnimation = false;
   bool _showAllMissionsReward = false;
   bool _allMissionsRewardClaimed = false;
+  bool _isLoading = true;
+  String? _loadError;
+  DateTime? _dataAsOf;
+  String? _employeeId;
+  String? _stationId;
 
-  GameState() {
-    _profile = MockData.initialProfile;
-    _videos = List.from(MockData.trainingVideos);
-    _clearPersistedData();
-  }
-
-  Future<void> _clearPersistedData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('xp');
-    await prefs.remove('total_sales');
-    await prefs.remove('streak');
-    await prefs.remove('completed_trainings');
+  Future<void> _bootstrap() async {
+    await loadDashboardData();
   }
 
   Future<void> _persist() async {
@@ -44,9 +71,52 @@ class GameState extends ChangeNotifier {
     );
   }
 
+  Future<void> loadDashboardData({bool showSyncIndicator = false}) async {
+    if (showSyncIndicator) {
+      _isSyncing = true;
+    } else {
+      _isLoading = true;
+    }
+    _loadError = null;
+    notifyListeners();
+
+    try {
+      final snapshot = await MobileDashboardService.loadDashboard();
+      _profile = snapshot.profile;
+      _videos = snapshot.videos;
+      await _hydrateTrainingCompletionFromPrefs();
+      _ranking = snapshot.ranking;
+      _weeklyTrend = snapshot.weeklyTrend;
+      _dataAsOf = snapshot.asOf;
+      _employeeId = snapshot.employeeId;
+      _stationId = snapshot.stationId;
+      _lastFeedback = null;
+    } catch (error) {
+      _loadError = _friendlyLoadError(error);
+    } finally {
+      _isLoading = false;
+      _isSyncing = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _hydrateTrainingCompletionFromPrefs() async {
+    if (_videos.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final completed =
+        prefs.getStringList('completed_trainings') ?? const <String>[];
+    if (completed.isEmpty) return;
+    final completedSet = completed.toSet();
+    _videos = _videos
+        .map(
+          (v) => completedSet.contains(v.id) ? v.copyWith(completed: true) : v,
+        )
+        .toList();
+  }
+
   UserProfile get profile => _profile;
   List<TrainingVideo> get videos => _videos;
-  List<RankingEntry> get ranking => MockData.weeklyRanking;
+  List<RankingEntry> get ranking => _ranking;
   String? get lastFeedback => _lastFeedback;
   bool get showCelebration => _showCelebration;
   String get celebrationMessage => _celebrationMessage;
@@ -58,9 +128,13 @@ class GameState extends ChangeNotifier {
   bool get isSyncing => _isSyncing;
   bool get isOnline => _isOnline;
   int get unreadChatCount => _unreadChatCount;
+  bool get isLoading => _isLoading;
+  String? get loadError => _loadError;
+  DateTime? get dataAsOf => _dataAsOf;
+  String? get backendEmployeeId => _employeeId;
+  String? get backendStationId => _stationId;
 
-  // Mock weekly trend data (sales per day: Mon-today)
-  List<double> get weeklyTrend => const [4, 7, 5, 8, 6, 9, 0];
+  List<double> get weeklyTrend => _weeklyTrend;
   double get weeklyAverage {
     final data = weeklyTrend.where((d) => d > 0);
     if (data.isEmpty) return 0;
@@ -75,26 +149,30 @@ class GameState extends ChangeNotifier {
   }
 
   String get motivationalPhrase {
-    final idx =
-        DateTime.now().millisecond % MockData.motivationalPhrases.length;
-    return MockData.motivationalPhrases[idx];
+    final idx = DateTime.now().millisecond % _motivationalPhrases.length;
+    return _motivationalPhrases[idx];
   }
 
   String get coachMessage {
+    if (_loadError != null && _loadError!.trim().isNotEmpty) {
+      // Nunca mostrar detalles técnicos al usuario final.
+      return 'Estoy teniendo problemas para cargar tu tablero. Desliza hacia abajo para reintentar.';
+    }
+
     final hour = DateTime.now().hour;
     final total = _profile.todayTotalSales;
     if (total == 0 && hour > 9) {
-      return '${_profile.name}, aun no has registrado ventas. Los primeros clientes de la manana suelen estar mas abiertos a ofertas.';
+      return '${_profile.name}, aun no encuentro ventas recientes para tu tablero. En cuanto carguen los datos, te doy recomendaciones puntuales.';
     }
     if (hour >= 14 && hour <= 17) {
       return '${_profile.name}, las tardes son el mejor momento para ofrecer aromatizantes. Los clientes buscan algo extra.';
     }
     if (total >= 8) {
-      return 'Llevas $total ventas hoy, vas muy bien! Sigue con ese ritmo para alcanzar el Top 3.';
+      return 'Llevas $total ventas en el corte cargado, vas muy bien. Sigue con ese ritmo para escalar posiciones.';
     }
     final bestProduct = _getBestProductToday();
     if (bestProduct != null) {
-      return 'Tu fuerte hoy son los ${bestProduct.label.toLowerCase()}s. Intenta diversificar ofreciendo otros productos.';
+      return 'Tu fuerte en el corte actual son los ${bestProduct.label.toLowerCase()}s. Intenta diversificar ofreciendo otros productos.';
     }
     return 'Cada cliente es una oportunidad. Ofrece siempre algo adicional al despachar.';
   }
@@ -126,6 +204,7 @@ class GameState extends ChangeNotifier {
       ..add(SaleRecord(product: product, timestamp: DateTime.now()));
 
     int xpGain = 5;
+    _bumpWeeklyTrend(1);
 
     final newMissions = _profile.missions.map((mission) {
       if (mission.product == product && !mission.isCompleted) {
@@ -154,12 +233,47 @@ class GameState extends ChangeNotifier {
       _triggerCelebration('Subiste a ${_profile.level.title}!');
     }
 
-    _checkBadges();
     _generateFeedback(product);
     _checkAllMissionsCompleted();
     _simulateSync();
-    _persist();
+    unawaited(_recordSaleToBackend(product));
+    unawaited(_persist());
     notifyListeners();
+  }
+
+  void _bumpWeeklyTrend(double delta) {
+    if (_weeklyTrend.isEmpty) {
+      _weeklyTrend = List<double>.filled(7, 0);
+    }
+    if (_weeklyTrend.length < 7) {
+      _weeklyTrend = List<double>.from(_weeklyTrend)
+        ..addAll(List<double>.filled(7 - _weeklyTrend.length, 0));
+    }
+    final copy = List<double>.from(_weeklyTrend);
+    copy[copy.length - 1] = (copy.last + delta).clamp(0, 9999);
+    _weeklyTrend = copy;
+  }
+
+  Future<void> _recordSaleToBackend(ProductType product) async {
+    final employeeId = _employeeId;
+    final stationId = _stationId;
+    if (employeeId == null ||
+        employeeId.trim().isEmpty ||
+        stationId == null ||
+        stationId.trim().isEmpty) {
+      return;
+    }
+
+    try {
+      await MobileSalesService.recordSale(
+        employeeId: employeeId,
+        stationId: stationId,
+        productType: product,
+      );
+      unawaited(loadDashboardData(showSyncIndicator: true));
+    } catch (error) {
+      debugPrint('GameState.recordSale backend error=$error');
+    }
   }
 
   void registerSaleWithTicket(ProductType product) {
@@ -172,7 +286,6 @@ class GameState extends ChangeNotifier {
     _tickets.insert(0, ticket);
     notifyListeners();
 
-    // Simulate validation after delay
     Future.delayed(const Duration(seconds: 4), () {
       final idx = _tickets.indexWhere((t) => t.id == ticket.id);
       if (idx != -1) {
@@ -218,9 +331,24 @@ class GameState extends ChangeNotifier {
 
     _triggerCelebration('+${video.xpReward} XP');
     _checkAllMissionsCompleted();
-    _simulateSync();
-    _persist();
+    unawaited(_completeTrainingInBackend(video));
+    unawaited(_persist());
     notifyListeners();
+  }
+
+  Future<void> _completeTrainingInBackend(TrainingVideo video) async {
+    final employeeId = _employeeId;
+    if (employeeId == null || employeeId.trim().isEmpty) return;
+    try {
+      await MobileTrainingService.completeTraining(
+        employeeId: employeeId,
+        videoId: video.id,
+        xpReward: video.xpReward,
+      );
+      unawaited(loadDashboardData(showSyncIndicator: true));
+    } catch (error) {
+      debugPrint('GameState.completeTraining backend error=$error');
+    }
   }
 
   void dismissCelebration() {
@@ -235,10 +363,9 @@ class GameState extends ChangeNotifier {
   }
 
   void _checkAllMissionsCompleted() {
-    if (_allMissionsRewardClaimed) return;
+    if (_allMissionsRewardClaimed || _profile.missions.isEmpty) return;
     final allDone = _profile.missions.every((m) => m.isCompleted);
     if (allDone) {
-      // Delay slightly so single-mission celebration shows first
       Future.delayed(const Duration(milliseconds: 3500), () {
         _showAllMissionsReward = true;
         notifyListeners();
@@ -252,7 +379,7 @@ class GameState extends ChangeNotifier {
     _allMissionsRewardClaimed = true;
     _profile = _profile.copyWith(xp: _profile.xp + 50);
     _triggerCelebration('Ganaste 50 XP de regalo!');
-    _persist();
+    unawaited(_persist());
     notifyListeners();
   }
 
@@ -262,13 +389,8 @@ class GameState extends ChangeNotifier {
   }
 
   void simulateRefresh() {
-    _isSyncing = true;
-    notifyListeners();
-    Future.delayed(const Duration(milliseconds: 1200), () {
-      _isSyncing = false;
-      _unreadChatCount = 1;
-      notifyListeners();
-    });
+    _unreadChatCount = 1;
+    unawaited(loadDashboardData(showSyncIndicator: true));
   }
 
   void _simulateSync() {
@@ -278,20 +400,6 @@ class GameState extends ChangeNotifier {
       _isSyncing = false;
       notifyListeners();
     });
-  }
-
-  void _checkBadges() {
-    final newBadges = _profile.badges.map((badge) {
-      if (badge.unlocked) return badge;
-      switch (badge.id) {
-        case 'sales_100':
-          if (_profile.totalSales >= 100) return badge.copyWith(unlocked: true);
-        case 'streak_7':
-          if (_profile.streak >= 7) return badge.copyWith(unlocked: true);
-      }
-      return badge;
-    }).toList();
-    _profile = _profile.copyWith(badges: newBadges);
   }
 
   void _generateFeedback(ProductType product) {
@@ -312,7 +420,7 @@ class GameState extends ChangeNotifier {
 
   String? get alertMessage {
     if (hasUnregisteredSalesToday) {
-      return 'Aun no registras ventas hoy';
+      return 'Aun no registras ventas en el corte cargado';
     }
     final pending = pendingMissionsCount;
     if (pending > 0) {
@@ -321,5 +429,28 @@ class GameState extends ChangeNotifier {
       return 'Te faltan $remaining ventas para tu meta';
     }
     return null;
+  }
+
+  String _friendlyLoadError(Object error) {
+    debugPrint('GameState.loadDashboardData error=$error');
+    if (error is ApiException) {
+      final message = error.message.trim();
+      if (message.isNotEmpty) {
+        if (message.length <= 220) {
+          return message;
+        }
+        return '${message.substring(0, 217)}...';
+      }
+    }
+
+    final raw = error.toString().toLowerCase();
+    if (raw.contains('permission') || raw.contains('denied')) {
+      return 'No tengo permisos para cargar tus datos. Ejecuta el script de bootstrap de Supabase (RLS/GRANT) y reintenta.';
+    }
+    if (raw.contains('schema cache') || raw.contains('pgrst205')) {
+      return 'La base de datos no expone una tabla necesaria para el dashboard. Revisa el esquema de Supabase.';
+    }
+
+    return 'No se pudieron cargar tus datos del servidor.';
   }
 }

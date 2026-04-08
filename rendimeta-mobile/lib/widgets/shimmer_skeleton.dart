@@ -17,13 +17,13 @@ class ShimmerBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.textTertiary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(borderRadius),
-      ),
-    )
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: AppColors.textTertiary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
+        )
         .animate(onPlay: (c) => c.repeat())
         .shimmer(
           duration: 1200.ms,
@@ -60,25 +60,48 @@ class DashboardSkeleton extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            const ShimmerBox(width: double.infinity, height: 140, borderRadius: 20),
+            const ShimmerBox(
+              width: double.infinity,
+              height: 140,
+              borderRadius: 20,
+            ),
             const SizedBox(height: 20),
             const ShimmerBox(width: 150, height: 20),
             const SizedBox(height: 14),
-            const ShimmerBox(width: double.infinity, height: 72, borderRadius: 16),
+            const ShimmerBox(
+              width: double.infinity,
+              height: 72,
+              borderRadius: 16,
+            ),
             const SizedBox(height: 10),
-            const ShimmerBox(width: double.infinity, height: 72, borderRadius: 16),
+            const ShimmerBox(
+              width: double.infinity,
+              height: 72,
+              borderRadius: 16,
+            ),
             const SizedBox(height: 10),
-            const ShimmerBox(width: double.infinity, height: 72, borderRadius: 16),
+            const ShimmerBox(
+              width: double.infinity,
+              height: 72,
+              borderRadius: 16,
+            ),
             const SizedBox(height: 20),
             const ShimmerBox(width: 130, height: 20),
             const SizedBox(height: 14),
             Row(
-              children: List.generate(4, (i) => const Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: ShimmerBox(width: double.infinity, height: 90, borderRadius: 16),
+              children: List.generate(
+                4,
+                (i) => const Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    child: ShimmerBox(
+                      width: double.infinity,
+                      height: 90,
+                      borderRadius: 16,
+                    ),
+                  ),
                 ),
-              )),
+              ),
             ),
           ],
         ),
@@ -109,15 +132,22 @@ class SalesSkeleton extends StatelessWidget {
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
                 physics: const NeverScrollableScrollPhysics(),
-                children: List.generate(4, (i) => const ShimmerBox(
-                  width: double.infinity,
-                  height: double.infinity,
-                  borderRadius: 24,
-                )),
+                children: List.generate(
+                  4,
+                  (i) => const ShimmerBox(
+                    width: double.infinity,
+                    height: double.infinity,
+                    borderRadius: 24,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 20),
-            const ShimmerBox(width: double.infinity, height: 60, borderRadius: 16),
+            const ShimmerBox(
+              width: double.infinity,
+              height: 60,
+              borderRadius: 16,
+            ),
             const SizedBox(height: 24),
           ],
         ),
@@ -150,7 +180,9 @@ class TrainingSkeleton extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Center(child: ShimmerBox(width: 60, height: 8, borderRadius: 4)),
+            const Center(
+              child: ShimmerBox(width: 60, height: 8, borderRadius: 4),
+            ),
             const SizedBox(height: 24),
           ],
         ),
@@ -177,15 +209,26 @@ class ProfileSkeleton extends StatelessWidget {
             const ShimmerBox(width: 180, height: 14),
             const SizedBox(height: 24),
             Row(
-              children: List.generate(3, (i) => const Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: ShimmerBox(width: double.infinity, height: 80, borderRadius: 16),
+              children: List.generate(
+                3,
+                (i) => const Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    child: ShimmerBox(
+                      width: double.infinity,
+                      height: 80,
+                      borderRadius: 16,
+                    ),
+                  ),
                 ),
-              )),
+              ),
             ),
             const SizedBox(height: 20),
-            const ShimmerBox(width: double.infinity, height: 80, borderRadius: 20),
+            const ShimmerBox(
+              width: double.infinity,
+              height: 80,
+              borderRadius: 20,
+            ),
             const SizedBox(height: 20),
             const ShimmerBox(width: 120, height: 20),
             const SizedBox(height: 14),
@@ -195,11 +238,14 @@ class ProfileSkeleton extends StatelessWidget {
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
                 physics: const NeverScrollableScrollPhysics(),
-                children: List.generate(9, (i) => const ShimmerBox(
-                  width: double.infinity,
-                  height: double.infinity,
-                  borderRadius: 16,
-                )),
+                children: List.generate(
+                  9,
+                  (i) => const ShimmerBox(
+                    width: double.infinity,
+                    height: double.infinity,
+                    borderRadius: 16,
+                  ),
+                ),
               ),
             ),
           ],

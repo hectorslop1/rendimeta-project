@@ -1,25 +1,13 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'app_env.dart';
 
 class OpenAiVoiceConfig {
   OpenAiVoiceConfig._();
 
-  static String get apiKey => dotenv.env['OPENAI_API_KEY']?.trim() ?? '';
-
-  static String get realtimeModel =>
-      dotenv.env['OPENAI_REALTIME_MODEL']?.trim().isNotEmpty == true
-      ? dotenv.env['OPENAI_REALTIME_MODEL']!.trim()
-      : 'gpt-realtime-mini';
-
+  static String get apiKey => AppEnv.openAiApiKey;
+  static String get realtimeModel => AppEnv.openAiRealtimeModel;
   static String get transcriptionModel =>
-      dotenv.env['OPENAI_REALTIME_TRANSCRIPTION_MODEL']?.trim().isNotEmpty ==
-          true
-      ? dotenv.env['OPENAI_REALTIME_TRANSCRIPTION_MODEL']!.trim()
-      : 'gpt-4o-mini-transcribe';
-
-  static String get voice =>
-      dotenv.env['OPENAI_REALTIME_VOICE']?.trim().isNotEmpty == true
-      ? dotenv.env['OPENAI_REALTIME_VOICE']!.trim()
-      : 'shimmer';
+      AppEnv.openAiRealtimeTranscriptionModel;
+  static String get voice => AppEnv.openAiRealtimeVoice;
 
   static String get fallbackRealtimeModel => 'gpt-realtime';
 

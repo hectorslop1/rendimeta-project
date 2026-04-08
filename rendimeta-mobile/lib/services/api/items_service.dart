@@ -99,12 +99,16 @@ class ItemsService {
     String? userId,
   }) async {
     try {
-      final response = await _client.from('items').insert({
-        'title': title,
-        'description': description,
-        'status': status,
-        'user_id': userId,
-      }).select().single();
+      final response = await _client
+          .from('items')
+          .insert({
+            'title': title,
+            'description': description,
+            'status': status,
+            'user_id': userId,
+          })
+          .select()
+          .single();
 
       return Item.fromJson(response);
     } catch (e) {
@@ -148,19 +152,20 @@ class ItemsService {
   }
 
   /// Suscribirse a cambios en items (realtime)
-  static RealtimeChannel subscribeToItems(
-    void Function(List<Item>) callback,
-  ) {
-    final channel = _client.channel('items-changes').onPostgresChanges(
-      event: PostgresChangeEvent.all,
-      schema: 'public',
-      table: 'items',
-      callback: (_) async {
-        // Refetch all items when any change occurs
-        final items = await getItems();
-        callback(items);
-      },
-    ).subscribe();
+  static RealtimeChannel subscribeToItems(void Function(List<Item>) callback) {
+    final channel = _client
+        .channel('items-changes')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'items',
+          callback: (_) async {
+            // Refetch all items when any change occurs
+            final items = await getItems();
+            callback(items);
+          },
+        )
+        .subscribe();
 
     return channel;
   }

@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/game_state.dart';
 import '../../core/haptics.dart';
 import '../../theme/app_colors.dart';
+import '../../services/api_service.dart';
 import '../onboarding/onboarding_screen.dart';
 import '../shell/main_shell.dart';
 
@@ -35,35 +41,98 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
     Haptics.tap();
+    try {
+      final email = _emailController.text.trim();
+      await SupabaseClientService.client.auth.signInWithPassword(
+        email: email,
+        password: _passwordController.text,
+      );
 
-    // Simulate login delay
-    await Future.delayed(const Duration(milliseconds: 1200));
+      Map<String, dynamic>? profile;
+      try {
+        profile = await SupabaseClientService.client
+            .from('users')
+            .select('id,email,isActive,employeeId')
+            .eq('email', email)
+            .limit(1)
+            .maybeSingle();
+      } on PostgrestException catch (error) {
+        await SupabaseClientService.client.auth.signOut();
+        final raw = error.message.toLowerCase();
+        if (raw.contains('permission denied') || error.code == '42501') {
+          throw ApiException(
+            'Tu cuenta inició sesión, pero no tiene permisos para leer tu perfil (RLS). Ejecuta el script de bootstrap en Supabase.',
+          );
+        }
+        throw ApiException(
+          'Tu cuenta inició sesión, pero no pude validar tu perfil en la base de datos.',
+        );
+      }
 
-    if (!mounted) return;
+      if (profile == null) {
+        await SupabaseClientService.client.auth.signOut();
+        throw ApiException(
+          'Tu cuenta sí inició sesión, pero no está habilitada en la base de datos (tabla users).',
+        );
+      }
 
-    // Save login state
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('is_logged_in', true);
-    await prefs.setString('user_email', _emailController.text);
+      final isActive = profile['isActive'] == true;
+      final employeeId = profile['employeeId']?.toString().trim() ?? '';
+      if (!isActive || employeeId.isEmpty) {
+        await SupabaseClientService.client.auth.signOut();
+        throw ApiException(
+          'Tu cuenta no está activa o no está vinculada a un empleado. Pide a tu administrador que te habilite.',
+        );
+      }
 
-    // Check if user has seen onboarding
-    final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+      if (!hasSeenOnboarding) {
+        await prefs.setBool('has_seen_onboarding', true);
+      }
 
-    Haptics.success();
+      if (mounted) {
+        unawaited(
+          context.read<GameState>().loadDashboardData(showSyncIndicator: true),
+        );
+      }
 
-    if (!mounted) return;
-
-    final destination = hasSeenOnboarding
-        ? const MainShell()
-        : const OnboardingScreen();
-    if (!hasSeenOnboarding) {
-      await prefs.setBool('has_seen_onboarding', true);
+      Haptics.success();
+      if (!mounted) return;
+      final destination = hasSeenOnboarding
+          ? const MainShell()
+          : const OnboardingScreen();
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute<void>(builder: (_) => destination));
+    } catch (error) {
+      if (error is ApiException) {
+        _showError(error.message);
+      } else {
+        _showError(_friendlyLoginError(error));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
 
-    if (!mounted) return;
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => destination));
+  String _friendlyLoginError(Object error) {
+    final raw = error.toString().toLowerCase();
+    if (raw.contains('invalid login credentials')) {
+      return 'Email o contraseña incorrectos';
+    }
+    if (raw.contains('email not confirmed') ||
+        raw.contains('email_not_confirmed') ||
+        (raw.contains('confirm') && raw.contains('email'))) {
+      return 'Tu email no está confirmado en Supabase. Confírmalo en Authentication → Users e intenta de nuevo.';
+    }
+    if (raw.contains('too many requests') || raw.contains('rate limit')) {
+      return 'Demasiados intentos. Espera un momento e intenta de nuevo.';
+    }
+    if (raw.contains('email') && raw.contains('format')) {
+      return 'El email no tiene un formato válido';
+    }
+    return 'No se pudo iniciar sesión. Intenta de nuevo.';
   }
 
   void _showError(String message) {
@@ -366,25 +435,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                       ).animate().fadeIn(delay: 900.ms, duration: 500.ms),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.textTertiary.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          'Demo: cualquier email y contraseña',
-                          style: GoogleFonts.manrope(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ).animate().fadeIn(delay: 1000.ms, duration: 500.ms),
                       const SizedBox(height: 32),
                     ],
                   ),

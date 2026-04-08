@@ -31,10 +31,10 @@ class TicketRecord {
   });
 
   TicketRecord copyWith({TicketStatus? status}) => TicketRecord(
-        id: id,
-        product: product,
-        timestamp: timestamp,
-        status: status ?? this.status,
-        xpReward: xpReward,
-      );
+    id: id,
+    product: product,
+    timestamp: timestamp,
+    status: status ?? this.status,
+    xpReward: xpReward,
+  );
 }

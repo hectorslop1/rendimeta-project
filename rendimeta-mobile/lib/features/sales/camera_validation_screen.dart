@@ -88,8 +88,7 @@ class _CameraValidationScreenState extends State<CameraValidationScreen>
           if (_phase == _CameraPhase.scanning)
             Center(child: _buildScanningOverlay()),
           // Done state
-          if (_phase == _CameraPhase.done)
-            Center(child: _buildDoneOverlay()),
+          if (_phase == _CameraPhase.done) Center(child: _buildDoneOverlay()),
           // Top bar
           Positioned(
             top: 0,
@@ -97,7 +96,10 @@ class _CameraValidationScreenState extends State<CameraValidationScreen>
             right: 0,
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -118,7 +120,10 @@ class _CameraValidationScreenState extends State<CameraValidationScreen>
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: widget.productColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
@@ -160,32 +165,39 @@ class _CameraValidationScreenState extends State<CameraValidationScreen>
                     const SizedBox(height: 24),
                     GestureDetector(
                       onTap: _capturePhoto,
-                      child: Container(
-                        width: 76,
-                        height: 76,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 4),
-                        ),
-                        child: Container(
-                          margin: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [AppColors.primary, widget.productColor],
-                            ),
-                          ),
-                        ),
-                      )
-                          .animate()
-                          .fadeIn(delay: 300.ms, duration: 400.ms)
-                          .scale(
-                            begin: const Offset(0.8, 0.8),
-                            end: const Offset(1, 1),
-                            delay: 300.ms,
-                            duration: 400.ms,
-                            curve: Curves.elasticOut,
-                          ),
+                      child:
+                          Container(
+                                width: 76,
+                                height: 76,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 4,
+                                  ),
+                                ),
+                                child: Container(
+                                  margin: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        AppColors.primary,
+                                        widget.productColor,
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .animate()
+                              .fadeIn(delay: 300.ms, duration: 400.ms)
+                              .scale(
+                                begin: const Offset(0.8, 0.8),
+                                end: const Offset(1, 1),
+                                delay: 300.ms,
+                                duration: 400.ms,
+                                curve: Curves.elasticOut,
+                              ),
                     ),
                     const SizedBox(height: 32),
                   ],
@@ -203,7 +215,10 @@ class _CameraValidationScreenState extends State<CameraValidationScreen>
                   padding: const EdgeInsets.only(bottom: 48),
                   child: Center(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(24),
@@ -216,7 +231,9 @@ class _CameraValidationScreenState extends State<CameraValidationScreen>
                             height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(widget.productColor),
+                              valueColor: AlwaysStoppedAnimation(
+                                widget.productColor,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -242,12 +259,12 @@ class _CameraValidationScreenState extends State<CameraValidationScreen>
 
   Widget _buildViewfinder() {
     return SizedBox(
-      width: 280,
-      height: 200,
-      child: CustomPaint(
-        painter: _ViewfinderPainter(color: widget.productColor),
-      ),
-    )
+          width: 280,
+          height: 200,
+          child: CustomPaint(
+            painter: _ViewfinderPainter(color: widget.productColor),
+          ),
+        )
         .animate()
         .fadeIn(duration: 500.ms)
         .scale(
@@ -305,18 +322,18 @@ class _CameraValidationScreenState extends State<CameraValidationScreen>
 
   Widget _buildDoneOverlay() {
     return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: 0.2),
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(
-        Icons.check_rounded,
-        color: AppColors.success,
-        size: 52,
-      ),
-    )
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            color: AppColors.success.withValues(alpha: 0.2),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.check_rounded,
+            color: AppColors.success,
+            size: 52,
+          ),
+        )
         .animate()
         .scale(
           begin: const Offset(0.5, 0.5),
@@ -409,7 +426,12 @@ class _ViewfinderPainter extends CustomPainter {
       Path()
         ..moveTo(size.width - cornerLen, size.height)
         ..lineTo(size.width - r, size.height)
-        ..quadraticBezierTo(size.width, size.height, size.width, size.height - r)
+        ..quadraticBezierTo(
+          size.width,
+          size.height,
+          size.width,
+          size.height - r,
+        )
         ..lineTo(size.width, size.height - cornerLen),
       paint,
     );

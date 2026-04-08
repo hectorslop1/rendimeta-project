@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/haptics.dart';
+import '../../services/api_service.dart';
 import '../auth/login_screen.dart';
 import '../onboarding/onboarding_screen.dart';
 import '../shell/main_shell.dart';
@@ -24,14 +25,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkAuthAndRoute() async {
     final prefs = await SharedPreferences.getInstance();
-    final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
     final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+    final hasSession = SupabaseClientService.client.auth.currentSession != null;
 
     await Future.delayed(const Duration(milliseconds: 2400));
     if (!mounted) return;
 
     // Route logic: login → onboarding → main shell
-    if (!isLoggedIn) {
+    if (!hasSession) {
       _navigateTo(const LoginScreen());
     } else if (!hasSeenOnboarding) {
       _navigateTo(const OnboardingScreen());

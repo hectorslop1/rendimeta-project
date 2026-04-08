@@ -5,8 +5,15 @@ import '../theme/app_colors.dart';
 
 class ValidationSuccessAnimation extends StatefulWidget {
   final VoidCallback onComplete;
+  final String title;
+  final String? subtitle;
 
-  const ValidationSuccessAnimation({super.key, required this.onComplete});
+  const ValidationSuccessAnimation({
+    super.key,
+    required this.onComplete,
+    this.title = 'Venta registrada',
+    this.subtitle = 'Se guardó correctamente',
+  });
 
   @override
   State<ValidationSuccessAnimation> createState() =>
@@ -98,13 +105,19 @@ class _ValidationSuccessAnimationState extends State<ValidationSuccessAnimation>
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Checkmark with pulse
+        // Checkmark with pulse + message
         Center(
-          child: AnimatedBuilder(
-            animation: _scaleAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _scaleAnimation.value,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedBuilder(
+                animation: _scaleAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: child,
+                  );
+                },
                 child: Container(
                   width: 100,
                   height: 100,
@@ -125,8 +138,31 @@ class _ValidationSuccessAnimationState extends State<ValidationSuccessAnimation>
                     size: 56,
                   ),
                 ),
-              );
-            },
+              ),
+              const SizedBox(height: 18),
+              Text(
+                widget.title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.2,
+                ),
+              ),
+              if ((widget.subtitle ?? '').trim().isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  widget.subtitle!.trim(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.82),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
         // Particles

@@ -10,8 +10,8 @@ import '../../theme/app_colors.dart';
 import '../../widgets/animated_progress_ring.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/xp_progress_bar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../auth/login_screen.dart';
+import '../../services/api_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -67,9 +67,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (confirmed == true && mounted) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('is_logged_in', false);
-      await prefs.remove('user_email');
+      try {
+        await SupabaseClientService.client.auth.signOut();
+      } catch (_) {}
 
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
@@ -317,7 +317,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '$unlockedCount de ${profile.badges.length} desbloqueadas',
+                      profile.badges.isEmpty
+                          ? 'Sin insignias cargadas'
+                          : '$unlockedCount de ${profile.badges.length} desbloqueadas',
                       style: GoogleFonts.manrope(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,

@@ -6,6 +6,7 @@ import '../../core/game_state.dart';
 import '../../core/haptics.dart';
 import '../../core/models.dart';
 import '../../theme/app_colors.dart';
+import 'training_video_player_screen.dart';
 
 class TrainingScreen extends StatefulWidget {
   const TrainingScreen({super.key});
@@ -29,6 +30,70 @@ class _TrainingScreenState extends State<TrainingScreen> {
     return Consumer<GameState>(
       builder: (context, state, _) {
         final videos = state.videos;
+        if (videos.isEmpty) {
+          return SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.play_lesson_rounded,
+                      size: 48,
+                      color: AppColors.textTertiaryOf(context),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Capacitación no disponible',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimaryOf(context),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Aún no hay contenidos de capacitación disponibles.',
+                      style: GoogleFonts.manrope(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondaryOf(context),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 18),
+                    FilledButton.icon(
+                      onPressed: () async {
+                        Haptics.tap();
+                        await state.loadDashboardData(showSyncIndicator: true);
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: Text(
+                        'Actualizar',
+                        style: GoogleFonts.spaceGrotesk(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
         return SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,12 +255,31 @@ class _VideoCardState extends State<_VideoCard>
     });
   }
 
+  Future<void> _openVideoPlayer() async {
+    if (widget.video.completed) return;
+    final url = widget.video.videoUrl?.trim() ?? '';
+    if (url.isEmpty) {
+      _togglePlay();
+      return;
+    }
+    Haptics.selection();
+    final completed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => TrainingVideoPlayerScreen(video: widget.video),
+      ),
+    );
+    if (completed == true && mounted && !widget.video.completed) {
+      widget.onComplete();
+      setState(() => _isPlaying = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: GestureDetector(
-            onTap: _togglePlay,
+            onTap: _openVideoPlayer,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
@@ -343,8 +427,11 @@ class _VideoCardState extends State<_VideoCard>
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
-                                      _isPlaying
-                                          ? Icons.pause_rounded
+                                      (widget.video.videoUrl?.trim().isEmpty ??
+                                              true)
+                                          ? (_isPlaying
+                                                ? Icons.pause_rounded
+                                                : Icons.play_arrow_rounded)
                                           : Icons.play_arrow_rounded,
                                       color: Colors.white,
                                       size: 30,

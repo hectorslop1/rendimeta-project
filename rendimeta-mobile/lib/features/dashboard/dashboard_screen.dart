@@ -12,8 +12,6 @@ import '../../widgets/glass_card.dart';
 import '../../widgets/sparkline.dart';
 import '../../widgets/sync_indicator.dart';
 import '../../widgets/xp_progress_bar.dart';
-import '../../core/page_transitions.dart';
-import '../simulation/simulation_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -26,8 +24,7 @@ class DashboardScreen extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: () async {
             Haptics.tap();
-            state.simulateRefresh();
-            await Future.delayed(const Duration(milliseconds: 1200));
+            await state.loadDashboardData(showSyncIndicator: true);
           },
           color: AppColors.primary,
           backgroundColor: AppColors.surface,
@@ -49,19 +46,22 @@ class DashboardScreen extends StatelessWidget {
                       _buildLevelCard(context, profile),
                       const SizedBox(height: 16),
                       CoachBubble(message: state.coachMessage),
+                      if (state.loadError != null) ...[
+                        const SizedBox(height: 12),
+                        _buildLoadError(context, state, state.loadError!),
+                      ],
                       if (state.alertMessage != null)
                         _buildAlert(state.alertMessage!),
                       if (state.tickets.isNotEmpty) ...[
                         _buildPendingTickets(context, state),
                         const SizedBox(height: 20),
                       ],
-                      _buildMissionsSection(context, profile),
+                      _buildMissionsSection(context, state, profile),
                       const SizedBox(height: 20),
                       _buildTodaySalesWithTrend(context, state, profile),
                       const SizedBox(height: 20),
                       _buildRankingPreview(context, state),
                       const SizedBox(height: 20),
-                      _buildSimulationBanner(context),
                       const SizedBox(height: 100),
                     ],
                   ),
@@ -72,6 +72,44 @@ class DashboardScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  Widget _buildLoadError(
+    BuildContext context,
+    GameState state,
+    String message,
+  ) {
+    return GlassCard(
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_off_rounded, color: AppColors.error, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.manrope(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondaryOf(context),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Haptics.tap();
+              await state.loadDashboardData(showSyncIndicator: true);
+            },
+            child: Text(
+              'Reintentar',
+              style: GoogleFonts.spaceGrotesk(
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(delay: 180.ms, duration: 300.ms);
   }
 
   Widget _buildLevelCard(BuildContext context, UserProfile profile) {
@@ -223,7 +261,11 @@ class DashboardScreen extends StatelessWidget {
     ).animate().fadeIn(delay: 150.ms, duration: 400.ms);
   }
 
-  Widget _buildMissionsSection(BuildContext context, UserProfile profile) {
+  Widget _buildMissionsSection(
+    BuildContext context,
+    GameState state,
+    UserProfile profile,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -242,14 +284,42 @@ class DashboardScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 14),
-        ...profile.missions.asMap().entries.map((entry) {
-          final i = entry.key;
-          final mission = entry.value;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: _MissionTile(mission: mission, index: i),
-          );
-        }),
+        if (profile.missions.isEmpty)
+          GlassCard(
+            child: Row(
+              children: [
+                Icon(
+                  Icons.flag_outlined,
+                  color: AppColors.textTertiaryOf(context),
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    state.isLoading
+                        ? 'Cargando misiones...'
+                        : (state.loadError != null)
+                        ? 'No se pudieron cargar tus misiones. Reintenta.'
+                        : 'Aún no hay misiones configuradas para hoy.',
+                    style: GoogleFonts.manrope(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondaryOf(context),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ).animate().fadeIn(delay: 210.ms, duration: 400.ms)
+        else
+          ...profile.missions.asMap().entries.map((entry) {
+            final i = entry.key;
+            final mission = entry.value;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _MissionTile(mission: mission, index: i),
+            );
+          }),
       ],
     ).animate().fadeIn(delay: 200.ms, duration: 500.ms);
   }
@@ -362,7 +432,66 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildRankingPreview(BuildContext context, GameState state) {
+    if (state.isLoading && state.ranking.isEmpty) {
+      return GlassCard(
+        child: Row(
+          children: [
+            const Icon(
+              Icons.leaderboard_rounded,
+              color: AppColors.secondary,
+              size: 22,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Cargando ranking...',
+                style: GoogleFonts.manrope(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondaryOf(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ).animate().fadeIn(delay: 250.ms, duration: 350.ms);
+    }
+
+    if (!state.isLoading && state.ranking.isEmpty) {
+      return GlassCard(
+        child: Row(
+          children: [
+            const Icon(
+              Icons.leaderboard_rounded,
+              color: AppColors.secondary,
+              size: 22,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Ranking no disponible por ahora',
+                style: GoogleFonts.manrope(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondaryOf(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ).animate().fadeIn(delay: 250.ms, duration: 350.ms);
+    }
+
     final top3 = state.ranking.take(3).toList();
+    final currentUser = state.ranking.firstWhere(
+      (r) => r.isCurrentUser,
+      orElse: () => RankingEntry(
+        name: state.profile.name,
+        totalSales: state.profile.totalSales,
+        position: state.ranking.length + 1,
+        isCurrentUser: true,
+      ),
+    );
     return GlassCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,7 +514,7 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    'Tu: #${state.ranking.firstWhere((r) => r.isCurrentUser).position}',
+                    'Tu: #${currentUser.position}',
                     style: GoogleFonts.spaceGrotesk(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -457,84 +586,7 @@ class DashboardScreen extends StatelessWidget {
         .slideY(begin: 0.05, end: 0, duration: 500.ms);
   }
 
-  Widget _buildSimulationBanner(BuildContext context) {
-    return GestureDetector(
-          onTap: () {
-            Haptics.tap();
-            Navigator.of(
-              context,
-            ).push(SlideUpRoute(page: const SimulationScreen()));
-          },
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF7A28FF), Color(0xFF2DE2E2)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.secondary.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(
-                    Icons.psychology_rounded,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Modo simulacion',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Practica con un cliente virtual',
-                        style: GoogleFonts.manrope(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ],
-            ),
-          ),
-        )
-        .animate()
-        .fadeIn(delay: 500.ms, duration: 500.ms)
-        .slideY(begin: 0.05, end: 0, duration: 500.ms);
-  }
+  // (Modo simulación removido del Home)
 }
 
 // --- Hero Header with animated gradient ---

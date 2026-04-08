@@ -46,13 +46,13 @@ class Badge {
   });
 
   Badge copyWith({bool? unlocked}) => Badge(
-        id: id,
-        name: name,
-        description: description,
-        tier: tier,
-        icon: icon,
-        unlocked: unlocked ?? this.unlocked,
-      );
+    id: id,
+    name: name,
+    description: description,
+    tier: tier,
+    icon: icon,
+    unlocked: unlocked ?? this.unlocked,
+  );
 }
 
 class DailyMission {
@@ -76,13 +76,13 @@ class DailyMission {
   double get progress => (current / target).clamp(0.0, 1.0);
 
   DailyMission copyWith({int? current}) => DailyMission(
-        id: id,
-        description: description,
-        product: product,
-        target: target,
-        current: current ?? this.current,
-        xpReward: xpReward,
-      );
+    id: id,
+    description: description,
+    product: product,
+    target: target,
+    current: current ?? this.current,
+    xpReward: xpReward,
+  );
 }
 
 class SaleRecord {
@@ -100,6 +100,7 @@ class TrainingVideo {
   final int xpReward;
   final bool completed;
   final Color accentColor;
+  final String? videoUrl;
 
   const TrainingVideo({
     required this.id,
@@ -109,17 +110,19 @@ class TrainingVideo {
     required this.xpReward,
     this.completed = false,
     required this.accentColor,
+    this.videoUrl,
   });
 
-  TrainingVideo copyWith({bool? completed}) => TrainingVideo(
-        id: id,
-        title: title,
-        subtitle: subtitle,
-        duration: duration,
-        xpReward: xpReward,
-        completed: completed ?? this.completed,
-        accentColor: accentColor,
-      );
+  TrainingVideo copyWith({bool? completed, String? videoUrl}) => TrainingVideo(
+    id: id,
+    title: title,
+    subtitle: subtitle,
+    duration: duration,
+    xpReward: xpReward,
+    completed: completed ?? this.completed,
+    accentColor: accentColor,
+    videoUrl: videoUrl ?? this.videoUrl,
+  );
 }
 
 class RankingEntry {
@@ -160,9 +163,13 @@ class UserProfile {
   });
 
   UserLevel get level {
-    if (xp >= UserLevel.maestroVentas.xpRequired) return UserLevel.maestroVentas;
+    if (xp >= UserLevel.maestroVentas.xpRequired) {
+      return UserLevel.maestroVentas;
+    }
     if (xp >= UserLevel.expertoPiso.xpRequired) return UserLevel.expertoPiso;
-    if (xp >= UserLevel.vendedorActivo.xpRequired) return UserLevel.vendedorActivo;
+    if (xp >= UserLevel.vendedorActivo.xpRequired) {
+      return UserLevel.vendedorActivo;
+    }
     return UserLevel.novato;
   }
 
@@ -177,7 +184,10 @@ class UserProfile {
     if (next == null) return 1.0;
     final currentLevelXp = level.xpRequired;
     final nextLevelXp = next.xpRequired;
-    return ((xp - currentLevelXp) / (nextLevelXp - currentLevelXp)).clamp(0.0, 1.0);
+    return ((xp - currentLevelXp) / (nextLevelXp - currentLevelXp)).clamp(
+      0.0,
+      1.0,
+    );
   }
 
   int get todayTotalSales => todaySales.values.fold(0, (a, b) => a + b);
@@ -190,16 +200,15 @@ class UserProfile {
     List<Badge>? badges,
     List<DailyMission>? missions,
     List<SaleRecord>? salesHistory,
-  }) =>
-      UserProfile(
-        name: name,
-        station: station,
-        xp: xp ?? this.xp,
-        streak: streak ?? this.streak,
-        totalSales: totalSales ?? this.totalSales,
-        todaySales: todaySales ?? this.todaySales,
-        badges: badges ?? this.badges,
-        missions: missions ?? this.missions,
-        salesHistory: salesHistory ?? this.salesHistory,
-      );
+  }) => UserProfile(
+    name: name,
+    station: station,
+    xp: xp ?? this.xp,
+    streak: streak ?? this.streak,
+    totalSales: totalSales ?? this.totalSales,
+    todaySales: todaySales ?? this.todaySales,
+    badges: badges ?? this.badges,
+    missions: missions ?? this.missions,
+    salesHistory: salesHistory ?? this.salesHistory,
+  );
 }

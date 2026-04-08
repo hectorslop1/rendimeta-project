@@ -41,9 +41,10 @@ class _AnimatedProgressRingState extends State<AnimatedProgressRing>
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: widget.duration);
-    _animation = Tween<double>(begin: 0, end: widget.progress).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _animation = Tween<double>(
+      begin: 0,
+      end: widget.progress,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
     _controller.forward();
   }
 
@@ -53,7 +54,9 @@ class _AnimatedProgressRingState extends State<AnimatedProgressRing>
     if (oldWidget.progress != widget.progress) {
       _oldProgress = _animation.value;
       _animation = Tween<double>(begin: _oldProgress, end: widget.progress)
-          .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+          .animate(
+            CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+          );
       _controller.reset();
       _controller.forward();
     }
@@ -81,7 +84,8 @@ class _AnimatedProgressRingState extends State<AnimatedProgressRing>
                 painter: _RingPainter(
                   progress: _animation.value,
                   strokeWidth: widget.strokeWidth,
-                  trackColor: widget.trackColor ??
+                  trackColor:
+                      widget.trackColor ??
                       AppColors.textTertiary.withValues(alpha: 0.12),
                   gradient: widget.gradient ?? AppColors.primaryGradient,
                 ),

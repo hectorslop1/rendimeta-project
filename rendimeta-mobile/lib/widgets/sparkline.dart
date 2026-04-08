@@ -58,7 +58,10 @@ class _SparklinePainter extends CustomPainter {
     final points = <Offset>[];
     for (int i = 0; i < data.length; i++) {
       final x = (i / (data.length - 1)) * size.width;
-      final y = size.height - ((data[i] - minVal) / range) * size.height * 0.85 - size.height * 0.075;
+      final y =
+          size.height -
+          ((data[i] - minVal) / range) * size.height * 0.85 -
+          size.height * 0.075;
       points.add(Offset(x, y));
     }
 
@@ -69,9 +72,12 @@ class _SparklinePainter extends CustomPainter {
       } else {
         final cp1x = (points[i - 1].dx + points[i].dx) / 2;
         fillPath.cubicTo(
-          cp1x, points[i - 1].dy,
-          cp1x, points[i].dy,
-          points[i].dx, points[i].dy,
+          cp1x,
+          points[i - 1].dy,
+          cp1x,
+          points[i].dy,
+          points[i].dx,
+          points[i].dy,
         );
       }
     }
@@ -94,9 +100,12 @@ class _SparklinePainter extends CustomPainter {
       } else {
         final cp1x = (points[i - 1].dx + points[i].dx) / 2;
         linePath.cubicTo(
-          cp1x, points[i - 1].dy,
-          cp1x, points[i].dy,
-          points[i].dx, points[i].dy,
+          cp1x,
+          points[i - 1].dy,
+          cp1x,
+          points[i].dy,
+          points[i].dx,
+          points[i].dy,
         );
       }
     }

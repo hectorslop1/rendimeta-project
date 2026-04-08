@@ -1,22 +1,34 @@
-// =====================================================
-// SUPABASE CLIENT (TEMPORAL - SOLO PARA DEMO)
-// =====================================================
-// Este archivo será reemplazado cuando migremos al backend real.
-// Cuando migres, solo cambia este archivo por tu cliente REST/GraphQL.
-// =====================================================
-
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../config/supabase_config.dart';
+import '../../core/config/app_env.dart';
 
 class SupabaseClientService {
   static SupabaseClient? _instance;
+  static bool _initialized = false;
 
   static Future<void> initialize() async {
+    if (_initialized && _instance != null) {
+      return;
+    }
+
+    if (!AppEnv.hasSupabaseConfig) {
+      throw ApiException(
+        'Faltan SUPABASE_URL o SUPABASE_ANON_KEY en rendimeta-mobile/.env.',
+      );
+    }
+
+    debugPrint(
+      'SupabaseClientService.initialize url=${SupabaseConfig.supabaseUrl} '
+      'anonKey=${AppEnv.masked(SupabaseConfig.supabaseAnonKey)}',
+    );
+
     await Supabase.initialize(
       url: SupabaseConfig.supabaseUrl,
       anonKey: SupabaseConfig.supabaseAnonKey,
     );
     _instance = Supabase.instance.client;
+    _initialized = true;
   }
 
   static SupabaseClient get client {

@@ -5,46 +5,43 @@
 // Solo cambiarás la implementación interna.
 // =====================================================
 
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_client.dart';
 
 class AuthUser {
   final String id;
   final String email;
-  final String name;
-  final String? station;
-  final String role;
-  final int level;
-  final List<String>? stationIds;
-  final int xp;
-  final int streak;
-  final int totalSales;
+  final String firstName;
+  final String lastName;
+  final String? roleId;
+  final String? employeeId;
+  final dynamic stationIds;
+  final bool isActive;
 
   AuthUser({
     required this.id,
     required this.email,
-    required this.name,
-    this.station,
-    required this.role,
-    required this.level,
+    required this.firstName,
+    required this.lastName,
+    this.roleId,
+    this.employeeId,
     this.stationIds,
-    required this.xp,
-    required this.streak,
-    required this.totalSales,
+    required this.isActive,
   });
 
-  factory AuthUser.fromJson(Map<String, dynamic> json) {
+  String get fullName => '$firstName $lastName'.trim();
+
+  factory AuthUser.fromRow(Map<String, dynamic> json) {
     return AuthUser(
       id: json['id'] as String,
       email: json['email'] as String,
-      name: json['name'] as String,
-      station: json['station'] as String?,
-      role: json['role'] as String,
-      level: json['level'] as int,
-      stationIds: (json['station_ids'] as List<dynamic>?)?.cast<String>(),
-      xp: json['xp'] as int,
-      streak: json['streak'] as int,
-      totalSales: json['total_sales'] as int,
+      firstName: (json['firstName'] ?? '').toString(),
+      lastName: (json['lastName'] ?? '').toString(),
+      roleId: json['roleId']?.toString(),
+      employeeId: json['employeeId']?.toString(),
+      stationIds: json['stationIds'],
+      isActive: json['isActive'] == true,
     );
   }
 }
@@ -67,12 +64,18 @@ class AuthService {
         password: password,
       );
 
-      if (response.user == null) {
+      if (response.user == null || (response.user!.email ?? '').isEmpty) {
         throw ApiException('No se pudo iniciar sesión');
       }
 
-      // Obtener datos adicionales del usuario
-      final userData = await _getUserById(response.user!.id);
+      final userData = await _getUserByEmail(response.user!.email!.trim());
+      if (!userData.isActive || (userData.employeeId ?? '').trim().isEmpty) {
+        await _client.auth.signOut();
+        throw ApiException(
+          'Tu cuenta no está activa o no está vinculada a un empleado. Pide a tu administrador que te habilite.',
+        );
+      }
+
       return userData;
     } catch (e) {
       throw ApiException('Error al iniciar sesión: ${e.toString()}');
@@ -93,11 +96,11 @@ class AuthService {
     try {
       final session = _client.auth.currentSession;
       if (session == null) return null;
-
-      final userData = await _getUserById(session.user.id);
-      return userData;
+      final email = session.user.email?.trim() ?? '';
+      if (email.isEmpty) return null;
+      return await _getUserByEmail(email);
     } catch (e) {
-      print('Error getting current user: $e');
+      debugPrint('Error getting current user: $e');
       return null;
     }
   }
@@ -109,30 +112,9 @@ class AuthService {
     required String name,
     String? station,
   }) async {
-    try {
-      // Crear usuario en Supabase Auth
-      final authResponse = await _client.auth.signUp(
-        email: email,
-        password: password,
-      );
-
-      if (authResponse.user == null) {
-        throw ApiException('No se pudo crear el usuario');
-      }
-
-      // Crear registro en tabla users
-      final userResponse = await _client.from('users').insert({
-        'id': authResponse.user!.id,
-        'email': email,
-        'name': name,
-        'station': station,
-        'password_hash': '', // Supabase Auth maneja esto
-      }).select().single();
-
-      return AuthUser.fromJson(userResponse);
-    } catch (e) {
-      throw ApiException('Error al registrarse: ${e.toString()}');
-    }
+    throw ApiException(
+      'El alta de usuarios debe hacerse desde administración. Esta app solo inicia sesión con cuentas ya creadas.',
+    );
   }
 
   /// Actualiza el perfil del usuario
@@ -141,22 +123,7 @@ class AuthService {
     String? name,
     String? station,
   }) async {
-    try {
-      final updates = <String, dynamic>{};
-      if (name != null) updates['name'] = name;
-      if (station != null) updates['station'] = station;
-
-      final response = await _client
-          .from('users')
-          .update(updates)
-          .eq('id', userId)
-          .select()
-          .single();
-
-      return AuthUser.fromJson(response);
-    } catch (e) {
-      throw ApiException('Error al actualizar perfil: ${e.toString()}');
-    }
+    throw ApiException('La edición de perfil no está habilitada en móvil aún.');
   }
 
   /// Verifica si hay una sesión activa
@@ -173,13 +140,16 @@ class AuthService {
   // FUNCIONES INTERNAS (pueden cambiar)
   // =====================================================
 
-  static Future<AuthUser> _getUserById(String id) async {
+  static Future<AuthUser> _getUserByEmail(String email) async {
     final response = await _client
         .from('users')
-        .select()
-        .eq('id', id)
+        .select(
+          'id,email,firstName,lastName,roleId,employeeId,stationIds,isActive',
+        )
+        .eq('email', email)
+        .limit(1)
         .single();
 
-    return AuthUser.fromJson(response);
+    return AuthUser.fromRow(Map<String, dynamic>.from(response));
   }
 }

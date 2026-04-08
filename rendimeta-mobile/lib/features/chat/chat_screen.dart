@@ -1,8 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../core/haptics.dart';
+import '../../core/game_state.dart';
 import '../../theme/app_colors.dart';
+import '../../services/api_service.dart';
+import 'ai_text_assistant_screen.dart';
 import '../voice_assistant/presentation/voice_assistant_screen.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -87,11 +93,12 @@ class _ChatScreenState extends State<ChatScreen> {
   void _sendMessage(String text) {
     if (text.trim().isEmpty) return;
     Haptics.tap();
+    final trimmed = text.trim();
     setState(() {
       _messages.add(
         _ChatMessage(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
-          text: text.trim(),
+          text: trimmed,
           sender: 'Tu',
           isMe: true,
           time: _formatNow(),
@@ -135,12 +142,69 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       });
     });
+
+    if (_activeTab == 1) {
+      unawaited(_submitReportToManager(trimmed));
+    }
+  }
+
+  Future<void> _submitReportToManager(String message) async {
+    final state = context.read<GameState>();
+    final employeeId = state.backendEmployeeId;
+    final stationId = state.backendStationId;
+    if (employeeId == null ||
+        employeeId.trim().isEmpty ||
+        stationId == null ||
+        stationId.trim().isEmpty) {
+      _showSnack(
+        'No se pudo enviar el reporte. Falta información del usuario.',
+      );
+      return;
+    }
+
+    try {
+      await IncidentReportService.submitReport(
+        stationId: stationId,
+        employeeId: employeeId,
+        message: message,
+        category: _inferReportCategory(message),
+      );
+      _showSnack('Reporte enviado al gerente');
+    } catch (_) {
+      _showSnack('No se pudo enviar el reporte. Intenta de nuevo.');
+    }
+  }
+
+  String? _inferReportCategory(String message) {
+    final lower = message.toLowerCase();
+    if (lower.contains('bomba')) return 'bomba';
+    if (lower.contains('insumo')) return 'insumo';
+    if (lower.contains('promoc')) return 'promocion';
+    return null;
+  }
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.surfaceOf(context),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _openVoiceAssistant() async {
     Haptics.selection();
     await Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const VoiceAssistantScreen()),
+    );
+  }
+
+  Future<void> _openTextAssistant() async {
+    Haptics.selection();
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const AiTextAssistantScreen()),
     );
   }
 
@@ -194,75 +258,128 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 4),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'RendiChat',
-            style: GoogleFonts.spaceGrotesk(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimaryOf(context),
-            ),
-          ),
-          const Spacer(),
-          GestureDetector(
-            onTap: _openVoiceAssistant,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.24),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+          Row(
+            children: [
+              Text(
+                'RendiChat',
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimaryOf(context),
+                ),
               ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.graphic_eq_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'IA Voz',
-                    style: GoogleFonts.manrope(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
+              const Spacer(),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: AppColors.success,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.success.withValues(alpha: 0.4),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'En linea',
+                style: GoogleFonts.manrope(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.success,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: _openVoiceAssistant,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.24),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.graphic_eq_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'IA Voz',
+                          style: GoogleFonts.manrope(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              color: AppColors.success,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.success.withValues(alpha: 0.4),
-                  blurRadius: 6,
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'En linea',
-            style: GoogleFonts.manrope(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.success,
-            ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: GestureDetector(
+                  onTap: _openTextAssistant,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceOf(context),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: AppColors.secondary.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.auto_awesome_rounded,
+                          color: AppColors.secondary,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'IA Texto',
+                          style: GoogleFonts.manrope(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

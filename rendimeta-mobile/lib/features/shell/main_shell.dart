@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -47,6 +49,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final state = context.read<GameState>();
+      if (state.loadError != null || state.profile.name == 'Cargando') {
+        unawaited(state.loadDashboardData(showSyncIndicator: true));
+      }
+    });
   }
 
   @override
